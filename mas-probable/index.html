@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F1E9">
+  <meta name="description" content="¿Quién es más probable? Un juego de juntada con votación secreta: pasás el celular, cada uno elige en secreto y al final se revela el más votado.">
+  <title>¿Quién es más probable? — Juego de votación secreta</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230F5B62'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='46' fill='%23FFF9F0' text-anchor='middle'%3EMP%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- SETUP -->
+    <main class="view setup" id="viewSetup">
+      <header class="brand">
+        <p class="kicker">Juego de juntada</p>
+        <h1 class="wordmark">¿Quién es más probable?</h1>
+        <p class="lead">Una consigna, un celular que circula y un voto secreto por cabeza. Al final se revela quién es el más probable.</p>
+      </header>
+
+      <section class="players" aria-labelledby="playersLabel">
+        <div class="section-head">
+          <h2 class="section-label" id="playersLabel">Jugadores</h2>
+          <span class="player-count" id="playerCount">0 de 12</span>
+        </div>
+
+        <form class="add-form" id="addForm" autocomplete="off" novalidate>
+          <label class="sr-only" for="playerInput">Nombre del jugador</label>
+          <input class="text-input" id="playerInput" type="text" name="player" placeholder="Un nombre" maxlength="18" enterkeyhint="done" autocapitalize="words" spellcheck="false">
+          <button class="btn btn-add" id="addBtn" type="submit">Sumar</button>
+        </form>
+
+        <p class="form-error" id="setupError" role="alert"></p>
+        <ul class="player-list" id="playerList"></ul>
+        <p class="players-hint" id="playersHint">Anotá de 3 a 12. El orden de la lista es el orden en que se pasa el celular.</p>
+      </section>
+
+      <div class="setup-actions">
+        <button class="btn btn-primary btn-xl" id="startBtn" type="button" disabled>Empezar</button>
+        <p class="start-hint" id="startHint" aria-live="polite">Faltan 3 jugadores.</p>
+        <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
+      </div>
+
+      <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
+    </main>
+
+    <!-- ROUND INTRO -->
+    <section class="view round" id="viewRound" hidden>
+      <header class="topbar">
+        <button class="icon-btn" id="quitBtn" type="button" aria-label="Dejar la partida y volver al inicio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="topbar-meta">
+          <span class="round-label" id="roundLabel">Ronda 1</span>
+          <span class="round-sub" id="roundSub">Quedan 100 consignas</span>
+        </div>
+        <button class="icon-btn" id="rankingBtn" type="button" aria-label="Ver el ranking acumulado">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/>
+            <path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>
+          </svg>
+        </button>
+      </header>
+
+      <article class="prompt-card" id="promptCard">
+        <p class="prompt-kicker">¿Quién es más probable que…?</p>
+        <p class="prompt-text" id="promptText"></p>
+        <p class="prompt-note">Lean la consigna en voz alta antes de votar.</p>
+      </article>
+
+      <div class="round-actions">
+        <button class="btn btn-primary btn-xl" id="beginVoteBtn" type="button">Arrancar la votación</button>
+        <p class="hint" id="roundHint">Un voto por persona, de a uno.</p>
+      </div>
+    </section>
+
+    <!-- HANDOFF -->
+    <section class="view handoff" id="viewHandoff" hidden>
+      <div class="handoff-card">
+        <svg class="handoff-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 2.5l19 19"/>
+          <path d="M6.7 6.7A9 9 0 0 0 12 12a8.6 8.6 0 0 0 4-1.7M9.9 4.2A9 9 0 0 1 12 4c5 0 9 5 9 8a9.8 9.8 0 0 1-1.8 3.6"/>
+          <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2"/>
+        </svg>
+        <p class="handoff-kicker" id="handoffKicker">Primer voto</p>
+        <h2 class="handoff-title">Pasale el celular a <span class="handoff-name" id="handoffName"></span></h2>
+        <p class="handoff-text">Que nadie mire la pantalla. El voto es secreto y se guarda al confirmar.</p>
+        <button class="btn btn-primary btn-xl" id="takePhoneBtn" type="button">Soy <span id="takePhoneName"></span></button>
+        <p class="handoff-progress" id="handoffProgress">Voto 1 de 5</p>
+      </div>
+    </section>
+
+    <!-- VOTE -->
+    <section class="view vote" id="viewVote" hidden>
+      <header class="vote-head">
+        <div class="vote-meta">
+          <span id="voteTurn">Turno de Ana</span>
+          <span id="voteProgress">Voto 1 de 5</span>
+        </div>
+        <p class="vote-prompt" id="votePrompt"></p>
+      </header>
+
+      <div class="vote-scroll">
+        <h2 class="section-label">Elegí en secreto</h2>
+        <div class="name-grid" id="nameGrid" role="group" aria-label="Elegí a quién votás" tabindex="-1"></div>
+      </div>
+
+      <div class="vote-actions">
+        <p class="vote-selected" id="voteSelected" aria-live="polite">Tocá un nombre para elegir.</p>
+        <button class="btn btn-primary btn-xl" id="confirmBtn" type="button" disabled>Confirmar voto</button>
+      </div>
+    </section>
+
+    <!-- REVEAL -->
+    <section class="view reveal" id="viewReveal" hidden>
+      <header class="reveal-head">
+        <p class="kicker" id="revealKicker">Resultado de la ronda 1</p>
+        <p class="reveal-prompt" id="revealPrompt"></p>
+        <p class="reveal-summary" id="revealSummary" aria-live="polite"></p>
+      </header>
+
+      <ul class="results" id="resultsList" aria-label="Votos por jugador"></ul>
+
+      <div class="reveal-actions">
+        <button class="btn btn-primary btn-xl" id="nextRoundBtn" type="button">Siguiente ronda</button>
+        <button class="btn btn-ghost" id="revealRankingBtn" type="button">Ver ranking acumulado</button>
+        <p class="hint" id="revealNote" hidden>Se terminó el mazo. Cerrá la partida con el ranking.</p>
+      </div>
+    </section>
+
+    <!-- RANKING -->
+    <section class="view ranking" id="viewRanking" hidden>
+      <header class="topbar">
+        <button class="icon-btn" id="rankingBackBtn" type="button" aria-label="Volver a la partida">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="topbar-meta">
+          <span class="round-label">Ranking</span>
+          <span class="round-sub" id="rankingSub">0 rondas jugadas</span>
+        </div>
+        <span class="icon-btn" aria-hidden="true" style="visibility:hidden"></span>
+      </header>
+
+      <div class="ranking-body">
+        <h2 class="ranking-title">Los más probables</h2>
+        <p class="ranking-lead">Veces que cada uno salió el más votado de la ronda.</p>
+        <ol class="ranking-list" id="rankingList"></ol>
+        <p class="ranking-empty" id="rankingEmpty" hidden>Todavía no hay rondas jugadas. El ranking se arma solo.</p>
+      </div>
+
+      <div class="ranking-actions">
+        <button class="btn btn-primary btn-xl" id="rankingContinueBtn" type="button">Seguir jugando</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <dialog id="howDialog">
+    <h2 class="dialog-title">Cómo se juega</h2>
+    <ol class="steps">
+      <li><strong>Anotá a los jugadores.</strong> De 3 a 12. La lista queda guardada para la próxima juntada.</li>
+      <li><strong>Lean la consigna en voz alta.</strong> Todos piensan lo mismo: ¿quién es más probable que…?</li>
+      <li><strong>El celular va de mano en mano.</strong> Cada uno toca un nombre en secreto y confirma. La pantalla de "pasale el celular" tapa la elección anterior.</li>
+      <li><strong>Se revelan los votos.</strong> El más votado se lleva la ronda y suma en el ranking acumulado.</li>
+    </ol>
+    <p class="dialog-tip">No hace falta cuenta ni conexión. Las consignas no se repiten hasta que se termina el mazo.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeHowBtn" type="button">Entendido</button>
+    </div>
+  </dialog>
+
+  <script src="data/prompts.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
