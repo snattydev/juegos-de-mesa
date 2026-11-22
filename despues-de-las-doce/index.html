@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#140D10">
+  <meta name="description" content="Después de las doce: un juego de cartas picante para pareja o grupo. +18. Privado, no se publica.">
+  <title>Después de las doce — Juego de cartas para adultos</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23140D10'/%3E%3Ctext x='50' y='70' font-family='Georgia,serif' font-size='40' fill='%23E0604F' text-anchor='middle'%3E12%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <button class="rules-fab" id="rulesFab" type="button" aria-label="Reglas de la casa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 3v18M3 12h18"/>
+    </svg>
+  </button>
+
+  <div class="app">
+    <!-- AGE GATE -->
+    <main class="view age" id="viewAge">
+      <p class="kicker">Juego de cartas · Para adultos</p>
+      <h1 class="wordmark">Después<br>de las doce</h1>
+      <p class="tagline">La noche empieza cuando lo deciden ustedes.</p>
+
+      <div class="age-box">
+        <p class="age-warning">Este juego es para mayores de 18 años. Contiene verdades, retos y deseos subidos de tono, pensados para jugarse con gente de confianza y con ganas de reírse.</p>
+        <p class="age-warning age-warning-strong">Todo es opcional. Nada se guarda, nada se envía, nadie queda expuesto.</p>
+        <button class="btn btn-primary btn-xl" id="enterBtn">Soy mayor de 18, quiero entrar</button>
+        <button class="btn btn-ghost" id="leaveBtn">Todavía no</button>
+      </div>
+    </main>
+
+    <!-- SETUP -->
+    <main class="view setup" id="viewSetup" hidden>
+      <div class="setup-top">
+        <button class="icon-btn" id="setupBackBtn" type="button" aria-label="Volver">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h1 class="setup-title">Armemos la noche</h1>
+        <span class="icon-btn" aria-hidden="true" style="visibility:hidden"></span>
+      </div>
+
+      <section class="setup-section" aria-label="Modo de juego">
+        <p class="section-label">Modo</p>
+        <div class="seg" role="radiogroup" id="modeSeg">
+          <button class="seg-btn" type="button" role="radio" aria-checked="true" data-mode="duo">Uno a uno</button>
+          <button class="seg-btn" type="button" role="radio" aria-checked="false" data-mode="group">Grupo</button>
+        </div>
+      </section>
+
+      <section class="setup-section" aria-label="Intensidad">
+        <p class="section-label">Intensidad</p>
+        <div class="seg seg-three" role="radiogroup" id="intensitySeg">
+          <button class="seg-btn" type="button" role="radio" aria-checked="true" data-intensity="previa">Previa</button>
+          <button class="seg-btn" type="button" role="radio" aria-checked="false" data-intensity="caliente">Caliente</button>
+          <button class="seg-btn" type="button" role="radio" aria-checked="false" data-intensity="sin-filtro">Sin filtro</button>
+        </div>
+        <p class="seg-hint" id="intensityHint">Tensión y química.</p>
+      </section>
+
+      <section class="setup-section" aria-label="Jugadores">
+        <p class="section-label" id="namesLabel">Nombres</p>
+
+        <div class="duo-names" id="duoNames">
+          <label class="field">
+            <span class="field-label">Tu nombre</span>
+            <input type="text" id="duoNameA" placeholder="Vos" maxlength="24" autocomplete="off">
+          </label>
+          <label class="field">
+            <span class="field-label">El de la otra persona</span>
+            <input type="text" id="duoNameB" placeholder="Tu pareja" maxlength="24" autocomplete="off">
+          </label>
+        </div>
+
+        <div class="group-names" id="groupNames" hidden>
+          <ul class="name-chips" id="nameChips" aria-live="polite"></ul>
+          <div class="name-add">
+            <input type="text" id="nameInput" placeholder="Agregá un nombre" maxlength="24" autocomplete="off">
+            <button class="btn btn-small btn-primary" id="addNameBtn" type="button">Agregar</button>
+          </div>
+          <p class="field-note" id="nameCount">0 de 8 · mínimo 3</p>
+        </div>
+      </section>
+
+      <div class="setup-actions">
+        <button class="btn btn-primary btn-xl" id="startBtn">Empezar a jugar</button>
+        <button class="btn btn-ghost" id="howBtn">Cómo se juega</button>
+      </div>
+
+      <p class="setup-note">No hace falta descargar nada. Se juega desde el celular, acá nomás.</p>
+    </main>
+
+    <!-- GAME -->
+    <main class="view game" id="viewGame" hidden>
+      <div class="game-top">
+        <button class="icon-btn" id="gameBackBtn" type="button" aria-label="Volver a los ajustes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="game-meta">
+          <span class="game-mode" id="gameMode">Uno a uno · Previa</span>
+          <span class="game-turn" id="gameTurn">Le toca a Vos</span>
+        </div>
+        <button class="icon-btn" id="pickBtn" type="button" aria-label="Elegir a mano quién juega" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </button>
+      </div>
+
+      <div class="tension" role="progressbar" aria-label="Tensión" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="tensionTrack">
+        <span class="tension-fill" id="tensionFill"></span>
+      </div>
+
+      <div class="card-wrap" id="cardWrap">
+        <article class="card" id="cardEl" aria-live="polite" aria-atomic="true">
+          <span class="eyebrow" id="cardType">Verdad</span>
+          <p class="card-text" id="cardText"></p>
+          <span class="card-flag" id="cardFlag" hidden>Carta final</span>
+        </article>
+      </div>
+
+      <div class="game-actions">
+        <button class="btn btn-primary btn-xl" id="doneBtn">Cumplida</button>
+        <button class="btn btn-ghost" id="passBtn">Pasala</button>
+        <button class="btn btn-ghost" id="otherBtn">Otra carta</button>
+      </div>
+      <p class="hint">La tensión sube con las cumplidas. La palabra de corte es «pausa».</p>
+    </main>
+
+    <!-- END -->
+    <main class="view end" id="viewEnd" hidden>
+      <p class="kicker">Se hizo de día</p>
+      <h2 class="end-title">La noche llegó a su pico</h2>
+      <p class="end-text">Así quedó la partida. Sin ganadores: la tensión era de todas y todos.</p>
+
+      <dl class="summary">
+        <div class="summary-row">
+          <dt>Cumplidas</dt>
+          <dd id="sumCumplidas">0</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Pasadas</dt>
+          <dd id="sumPasadas">0</dd>
+        </div>
+        <div class="summary-row">
+          <dt>Descartadas</dt>
+          <dd id="sumOtras">0</dd>
+        </div>
+        <div class="summary-row summary-row-total">
+          <dt>Rondas</dt>
+          <dd id="sumRondas">0</dd>
+        </div>
+      </dl>
+
+      <div class="end-actions">
+        <button class="btn btn-primary btn-xl" id="againBtn">Seguir jugando</button>
+        <button class="btn btn-ghost" id="settingsBtn">Cambiar ajustes</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <dialog id="howDialog">
+    <h2 class="dialog-title">Cómo se juega</h2>
+    <ol class="steps">
+      <li><strong>Elegí modo e intensidad.</strong> Uno a uno alterna turnos; en grupo la app elige a quién le toca (o lo eligen a mano).</li>
+      <li><strong>Se saca una carta por vez.</strong> Hay tres tipos: <strong>Verdad</strong> (confesión), <strong>Reto</strong> (acción sugerida) y <strong>Deseo</strong> (pedido o pregunta íntima).</li>
+      <li><strong>Cumplida sube la tensión.</strong> Pasala avanza sin preguntar ni penalizar. Otra carta descarta y reparte de nuevo.</li>
+      <li><strong>Al 100% de tensión</strong> se desbloquea una carta final del nivel y, después, el cierre con el resumen.</li>
+    </ol>
+    <p class="dialog-tip">No hay puntaje ni ganadores. La tensión es del grupo, no de nadie en particular.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeHowBtn">Entendido</button>
+    </div>
+  </dialog>
+
+  <!-- HOUSE RULES -->
+  <dialog id="rulesDialog">
+    <h2 class="dialog-title">Reglas de la casa</h2>
+    <ul class="rules">
+      <li><strong>Todo es opcional.</strong> Nadie está obligado a nada. Si una carta no va, se pasa y listo.</li>
+      <li><strong>Pasala no se justifica.</strong> No hay que explicar por qué no. No se pregunta, no se insiste.</li>
+      <li><strong>La palabra de corte es «pausa».</strong> Se dice y se frena todo, sin vueltas ni reproches.</li>
+      <li><strong>Nada se guarda ni se envía.</strong> No hay cuentas, ni fotos, ni historial. Todo queda en la mesa.</li>
+      <li><strong>Respeto siempre.</strong> Nada coercitivo, nada degradante. Se juega entre gente que se tiene confianza.</li>
+    </ul>
+    <p class="dialog-tip">Este juego es privado y no se publica. Es para esta juntada, con estas personas.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeRulesBtn">Cierro</button>
+    </div>
+  </dialog>
+
+  <!-- MANUAL PICK -->
+  <dialog id="pickDialog">
+    <h2 class="dialog-title">¿A quién le toca?</h2>
+    <div class="pick-list" id="pickList"></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" id="closePickBtn">Cancelar</button>
+    </div>
+  </dialog>
+
+  <script src="data/cards.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
