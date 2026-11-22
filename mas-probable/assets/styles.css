@@ -9,8 +9,108 @@
   --accent-soft: rgba(15, 91, 98, 0.09);
   --danger: #A03B2E;
   --shadow: 0 26px 60px -34px rgba(48, 36, 24, 0.42);
+
+  /* Superficies y detalles que antes iban hardcodeados */
+  --bg-glow: #FCF8F1;
+  --bg-edge: #EFE7DA;
+  --bg-fade: rgba(246, 241, 233, 0);
+  --on-ink: #FFF9F0;
+  --hover: rgba(27, 25, 23, 0.05);
+  --track: rgba(27, 25, 23, 0.07);
+  --border-hover: rgba(27, 25, 23, 0.20);
+  --glass: rgba(255, 255, 255, 0.55);
+  --glass-hover: #FFFFFF;
+  --glass-strong: rgba(255, 255, 255, 0.8);
+  --veil: rgba(255, 253, 249, 0.72);
+  --shadow-card: 0 30px 70px -32px rgba(48, 36, 24, 0.40);
+  --shadow-btn: 0 12px 28px -14px rgba(27, 25, 23, 0.7);
+  --shadow-btn-hover: 0 16px 32px -14px rgba(27, 25, 23, 0.7);
+  --shadow-accent: 0 12px 28px -14px rgba(15, 91, 98, 0.8);
+  --shadow-dialog: 0 40px 90px -30px rgba(24, 20, 16, 0.5);
+  --backdrop: rgba(24, 20, 16, 0.42);
   color-scheme: light;
 }
+
+:root[data-theme="dark"] {
+  --bg: #12110F;
+  --surface: #1C1A17;
+  --ink: #F3EDE4;
+  --muted: #A69B8D;
+  --line: rgba(243, 237, 228, 0.12);
+  --accent: #77BFC3;
+  --accent-strong: #9BD5D8;
+  --accent-soft: rgba(119, 191, 195, 0.16);
+  --danger: #E08A7B;
+  --shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.85);
+
+  --bg-glow: #1E1B18;
+  --bg-edge: #0C0B0A;
+  --bg-fade: rgba(18, 17, 15, 0);
+  --on-ink: #12110F;
+  --hover: rgba(255, 255, 255, 0.06);
+  --track: rgba(243, 237, 228, 0.12);
+  --border-hover: rgba(243, 237, 228, 0.20);
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-hover: rgba(255, 255, 255, 0.10);
+  --glass-strong: rgba(255, 255, 255, 0.06);
+  --veil: rgba(255, 255, 255, 0.03);
+  --shadow-card: 0 30px 70px -32px rgba(0, 0, 0, 0.85);
+  --shadow-btn: 0 12px 28px -14px rgba(0, 0, 0, 0.9);
+  --shadow-btn-hover: 0 16px 32px -14px rgba(0, 0, 0, 0.9);
+  --shadow-accent: 0 12px 28px -14px rgba(0, 0, 0, 0.9);
+  --shadow-dialog: 0 40px 90px -30px rgba(0, 0, 0, 0.9);
+  --backdrop: rgba(0, 0, 0, 0.62);
+  color-scheme: dark;
+}
+
+/* ---------- Theme toggle ---------- */
+
+.theme-toggle {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  background: var(--line);
+  color: var(--ink);
+}
+
+.theme-toggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+/* El toggle vive solo en el inicio; en partida se esconde para no tapar controles. */
+body:has(#viewRound:not([hidden])) .theme-toggle,
+body:has(#viewHandoff:not([hidden])) .theme-toggle,
+body:has(#viewVote:not([hidden])) .theme-toggle,
+body:has(#viewReveal:not([hidden])) .theme-toggle,
+body:has(#viewRanking:not([hidden])) .theme-toggle { display: none !important; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
 * {
   box-sizing: border-box;
@@ -28,7 +128,7 @@ body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(120% 70% at 50% 0%, #FCF8F1 0%, var(--bg) 55%, #EFE7DA 100%);
+    radial-gradient(120% 70% at 50% 0%, var(--bg-glow) 0%, var(--bg) 55%, var(--bg-edge) 100%);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
@@ -187,7 +287,7 @@ button {
   border: none;
   border-radius: 14px;
   background: var(--ink);
-  color: #FFF9F0;
+  color: var(--on-ink);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -267,7 +367,7 @@ button {
 }
 
 .chip-remove:hover {
-  background: rgba(27, 25, 23, 0.07);
+  background: var(--track);
   color: var(--ink);
 }
 
@@ -337,14 +437,14 @@ button {
 
 .btn-primary {
   background: var(--ink);
-  color: #FFF9F0;
+  color: var(--on-ink);
   padding: 16px 24px;
-  box-shadow: 0 12px 28px -14px rgba(27, 25, 23, 0.7);
+  box-shadow: var(--shadow-btn);
 }
 
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 32px -14px rgba(27, 25, 23, 0.7);
+  box-shadow: var(--shadow-btn-hover);
 }
 
 .btn-primary:active {
@@ -360,7 +460,7 @@ button {
 
 .btn-primary.is-confirmed {
   background: var(--accent);
-  box-shadow: 0 12px 28px -14px rgba(15, 91, 98, 0.8);
+  box-shadow: var(--shadow-accent);
 }
 
 .btn-xl {
@@ -377,7 +477,7 @@ button {
 }
 
 .btn-ghost:hover {
-  background: rgba(27, 25, 23, 0.05);
+  background: var(--hover);
 }
 
 /* ---------- Barra superior ---------- */
@@ -417,14 +517,14 @@ button {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--glass);
   color: var(--ink);
   cursor: pointer;
   transition: background 0.18s ease, transform 0.12s ease;
 }
 
 .icon-btn:hover {
-  background: #fff;
+  background: var(--glass-hover);
 }
 
 .icon-btn:active {
@@ -461,8 +561,8 @@ button {
   border-radius: 28px;
   background: var(--surface);
   box-shadow:
-    0 30px 70px -32px rgba(48, 36, 24, 0.40),
-    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    var(--shadow-card),
+    0 1px 0 var(--glass-strong) inset;
   overflow: hidden;
 }
 
@@ -527,9 +627,9 @@ button {
   align-items: center;
   gap: 12px;
   padding: clamp(28px, 8vw, 44px);
-  border: 1px dashed rgba(15, 91, 98, 0.35);
+  border: 1px dashed color-mix(in srgb, var(--accent) 35%, transparent);
   border-radius: 28px;
-  background: rgba(255, 253, 249, 0.72);
+  background: var(--veil);
   text-align: center;
   animation: cardIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -667,7 +767,7 @@ button {
 }
 
 .name-btn:hover {
-  border-color: rgba(27, 25, 23, 0.2);
+  border-color: var(--border-hover);
 }
 
 .name-btn:active {
@@ -713,7 +813,7 @@ button {
   z-index: 2;
   margin-top: auto;
   padding: 16px 0 max(2px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, rgba(246, 241, 233, 0) 0%, var(--bg) 30%, var(--bg) 100%);
+  background: linear-gradient(180deg, var(--bg-fade) 0%, var(--bg) 30%, var(--bg) 100%);
 }
 
 .vote-selected {
@@ -828,7 +928,7 @@ button {
 .result-track {
   height: 12px;
   border-radius: 999px;
-  background: rgba(27, 25, 23, 0.07);
+  background: var(--track);
   overflow: hidden;
 }
 
@@ -969,11 +1069,11 @@ dialog {
   padding: 28px;
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 40px 90px -30px rgba(24, 20, 16, 0.5);
+  box-shadow: var(--shadow-dialog);
 }
 
 dialog::backdrop {
-  background: rgba(24, 20, 16, 0.42);
+  background: var(--backdrop);
   backdrop-filter: blur(5px);
 }
 
@@ -1014,7 +1114,7 @@ dialog::backdrop {
   place-items: center;
   border-radius: 50%;
   background: var(--ink);
-  color: #FFF9F0;
+  color: var(--on-ink);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -1034,6 +1134,35 @@ dialog::backdrop {
 
 .dialog-actions {
   margin-top: 22px;
+}
+
+/* ---------- Ajustes del tema oscuro ---------- */
+
+/* Los colores de jugador son oscuros: en modo nocturno se aclaran para que
+   las barras de votos, los puntos y el badge sigan leyéndose. */
+[data-theme="dark"] .result-fill,
+[data-theme="dark"] .result-dot,
+[data-theme="dark"] .name-dot {
+  background: color-mix(in srgb, var(--c, var(--accent)) 72%, white);
+}
+
+[data-theme="dark"] .result-badge {
+  background: color-mix(in srgb, var(--c, var(--accent)) 26%, transparent);
+  color: color-mix(in srgb, var(--c, var(--accent)) 55%, white);
+}
+
+[data-theme="dark"] .name-btn.is-selected {
+  border-color: color-mix(in srgb, var(--c, var(--accent)) 72%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, var(--accent)) 72%, white);
+}
+
+[data-theme="dark"] .result-row.is-top .result-track {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, var(--accent)) 55%, transparent);
+}
+
+[data-theme="dark"] .player-dot,
+[data-theme="dark"] .ranking-dot {
+  filter: brightness(1.6);
 }
 
 /* ---------- Animaciones ---------- */
@@ -1074,6 +1203,14 @@ dialog::backdrop {
 @media (max-width: 559px) {
   .name-btn:last-child:nth-child(odd) {
     grid-column: 1 / -1;
+  }
+}
+
+/* El toggle es fijo arriba a la derecha: en pantallas donde el contenido
+   llega al borde le reservamos una franja arriba para que no tape nada. */
+@media (max-width: 800px) {
+  .app {
+    padding-top: max(58px, calc(env(safe-area-inset-top) + 44px));
   }
 }
 

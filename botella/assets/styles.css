@@ -4,6 +4,8 @@
 
 :root {
   --bg: #F6F1E9;
+  --bg-top: #FCF8F1;
+  --bg-bottom: #EDE4D6;
   --paper: #FFFDF9;
   --ink: #1B1917;
   --muted: #6B6259;
@@ -11,6 +13,24 @@
   --line-strong: rgba(27, 25, 23, 0.22);
   --accent: #B4553A;
   --accent-deep: #8E3F2A;
+
+  --ink-soft: rgba(27, 25, 23, 0.06);
+  --ink-soft-2: rgba(27, 25, 23, 0.12);
+  --ink-soft-3: rgba(27, 25, 23, 0.045);
+  --panel-bg: rgba(255, 253, 249, 0.72);
+  --icon-bg: rgba(255, 253, 249, 0.7);
+  --on-primary: #FFF9F0;
+  --disabled-bg: rgba(27, 25, 23, 0.16);
+  --disabled-ink: rgba(27, 25, 23, 0.45);
+
+  --shadow-strong: rgba(27, 25, 23, 0.75);
+  --shadow-soft: rgba(48, 36, 24, 0.12);
+  --shadow-card: rgba(48, 36, 24, 0.45);
+  --shadow-wheel: rgba(48, 36, 24, 0.55);
+  --shadow-hub: rgba(48, 36, 24, 0.28);
+  --shadow-pointer: rgba(48, 36, 24, 0.35);
+  --shadow-dialog: rgba(24, 20, 16, 0.5);
+  --backdrop: rgba(24, 20, 16, 0.45);
 
   --sector-a: #F0E3CF;
   --sector-b: #B0532F;
@@ -24,6 +44,106 @@
 
   color-scheme: light;
 }
+
+/* Tema oscuro: fondo casi negro con tinte cálido, superficies un escalón
+   más claras y tinta hueso. La rueda mantiene un sector claro y otro
+   terracota para que los nombres sigan legibles. */
+
+:root[data-theme="dark"] {
+  --bg: #12110F;
+  --bg-top: #1E1B18;
+  --bg-bottom: #0C0B0A;
+  --paper: #1C1A17;
+  --ink: #F3EDE4;
+  --muted: #A69B8D;
+  --line: rgba(243, 237, 228, 0.12);
+  --line-strong: rgba(243, 237, 228, 0.24);
+  --accent: #E08C6C;
+  --accent-deep: #EFA98C;
+
+  --ink-soft: rgba(243, 237, 228, 0.06);
+  --ink-soft-2: rgba(243, 237, 228, 0.13);
+  --ink-soft-3: rgba(243, 237, 228, 0.05);
+  --panel-bg: rgba(255, 255, 255, 0.04);
+  --icon-bg: rgba(255, 255, 255, 0.06);
+  --on-primary: #14120F;
+  --disabled-bg: rgba(243, 237, 228, 0.14);
+  --disabled-ink: rgba(243, 237, 228, 0.42);
+
+  --shadow-strong: rgba(0, 0, 0, 0.85);
+  --shadow-soft: rgba(0, 0, 0, 0.35);
+  --shadow-card: rgba(0, 0, 0, 0.8);
+  --shadow-wheel: rgba(0, 0, 0, 0.75);
+  --shadow-hub: rgba(0, 0, 0, 0.55);
+  --shadow-pointer: rgba(0, 0, 0, 0.6);
+  --shadow-dialog: rgba(0, 0, 0, 0.65);
+  --backdrop: rgba(0, 0, 0, 0.62);
+
+  --sector-a: #3B2E24;
+  --sector-b: #8E4A33;
+  --seam: #12110F;
+  --label-a: #F3EDE4;
+  --label-b: #FFF4E6;
+
+  --level: #8FA87F;
+
+  color-scheme: dark;
+}
+
+/* Colores de intensidad (--level llega por JS): se aclaran para el fondo oscuro. */
+
+[data-theme="dark"] .level-tag { color: color-mix(in srgb, var(--level) 55%, #F3EDE4); }
+[data-theme="dark"] .qcard-tag { color: color-mix(in srgb, var(--level) 55%, #F3EDE4); }
+[data-theme="dark"] .qcard::before { background: color-mix(in srgb, var(--level) 65%, #F3EDE4); }
+[data-theme="dark"] .seg input:checked + span {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 -2px 0 color-mix(in srgb, var(--level) 65%, #F3EDE4);
+}
+
+/* ---------- Toggle de tema ---------- */
+
+.theme-toggle {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  background: var(--line);
+  color: var(--ink);
+}
+
+.theme-toggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg { width: 18px; height: 18px; display: block; }
+.theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+/* El toggle vive solo en el inicio; en partida se esconde para no tapar controles. */
+body:has(#viewGame:not([hidden])) .theme-toggle { display: none !important; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+/* El toggle ocupa la esquina superior derecha: en pantallas donde el toggle
+   cae sobre la app, el botón "?" del juego se corre a su izquierda y el
+   bloque central se mantiene centrado. */
 
 * { box-sizing: border-box; }
 
@@ -45,7 +165,7 @@ body {
   line-height: 1.45;
   color: var(--ink);
   background:
-    radial-gradient(120% 70% at 50% 0%, #FCF8F1 0%, var(--bg) 55%, #EDE4D6 100%);
+    radial-gradient(120% 70% at 50% 0%, var(--bg-top) 0%, var(--bg) 55%, var(--bg-bottom) 100%);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -136,17 +256,17 @@ button { cursor: pointer; }
 
 .btn-primary {
   background: var(--ink);
-  color: #FFF9F0;
+  color: var(--on-primary);
   padding: 16px 24px;
-  box-shadow: 0 12px 28px -14px rgba(27, 25, 23, 0.75);
+  box-shadow: 0 12px 28px -14px var(--shadow-strong);
 }
 
-.btn-primary:hover { box-shadow: 0 16px 34px -14px rgba(27, 25, 23, 0.75); }
+.btn-primary:hover { box-shadow: 0 16px 34px -14px var(--shadow-strong); }
 .btn-primary:active { transform: scale(0.985); }
 
 .btn-primary:disabled {
-  background: rgba(27, 25, 23, 0.16);
-  color: rgba(27, 25, 23, 0.45);
+  background: var(--disabled-bg);
+  color: var(--disabled-ink);
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
@@ -172,7 +292,7 @@ button { cursor: pointer; }
   border-radius: 14px;
 }
 
-.btn-ghost:hover { background: rgba(27, 25, 23, 0.06); }
+.btn-ghost:hover { background: var(--ink-soft); }
 .btn-ghost:active { transform: scale(0.99); }
 
 .btn-spin {
@@ -236,7 +356,7 @@ button { cursor: pointer; }
 .panel {
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: rgba(255, 253, 249, 0.72);
+  background: var(--panel-bg);
   padding: 12px 13px 13px;
 }
 
@@ -287,7 +407,7 @@ button { cursor: pointer; }
 .name-input:focus {
   outline: none;
   border-color: var(--ink);
-  box-shadow: 0 0 0 3px rgba(27, 25, 23, 0.08);
+  box-shadow: 0 0 0 3px var(--ink-soft);
 }
 
 .btn-add {
@@ -295,12 +415,12 @@ button { cursor: pointer; }
   height: var(--tap);
   padding: 0 16px;
   border-radius: 13px;
-  background: rgba(27, 25, 23, 0.07);
+  background: var(--ink-soft);
   font-size: 0.92rem;
   font-weight: 600;
 }
 
-.btn-add:hover { background: rgba(27, 25, 23, 0.12); }
+.btn-add:hover { background: var(--ink-soft-2); }
 .btn-add:active { transform: scale(0.97); }
 
 .chips {
@@ -345,7 +465,7 @@ button { cursor: pointer; }
   transition: background 0.16s ease, color 0.16s ease;
 }
 
-.chip-remove:hover { background: rgba(27, 25, 23, 0.08); color: var(--ink); }
+.chip-remove:hover { background: var(--ink-soft); color: var(--ink); }
 .chip-remove svg { width: 11px; height: 11px; display: block; }
 
 .empty-note {
@@ -372,6 +492,20 @@ button { cursor: pointer; }
   color: var(--muted);
 }
 
+.credit {
+  flex: none;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.credit strong {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 /* Segmentado de intensidad */
 
 .segmented {
@@ -381,7 +515,7 @@ button { cursor: pointer; }
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 15px;
-  background: rgba(27, 25, 23, 0.045);
+  background: var(--ink-soft-3);
 }
 
 .seg {
@@ -415,7 +549,7 @@ button { cursor: pointer; }
   color: var(--ink);
   font-weight: 600;
   box-shadow:
-    0 1px 2px rgba(48, 36, 24, 0.12),
+    0 1px 2px var(--shadow-soft),
     inset 0 -2px 0 var(--level);
 }
 
@@ -442,7 +576,7 @@ button { cursor: pointer; }
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(255, 253, 249, 0.7);
+  background: var(--icon-bg);
   color: var(--ink);
   transition: background 0.18s ease, transform 0.12s ease;
 }
@@ -519,8 +653,8 @@ button { cursor: pointer; }
   border-radius: 50%;
   border: 5px solid var(--paper);
   box-shadow:
-    0 26px 60px -30px rgba(48, 36, 24, 0.55),
-    0 0 0 1px rgba(27, 25, 23, 0.10);
+    0 26px 60px -30px var(--shadow-wheel),
+    0 0 0 1px var(--line);
   transform: rotate(0deg);
   will-change: transform;
 }
@@ -557,8 +691,8 @@ button { cursor: pointer; }
   border-radius: 50%;
   background: var(--paper);
   box-shadow:
-    0 4px 14px rgba(48, 36, 24, 0.28),
-    0 0 0 1px rgba(27, 25, 23, 0.10);
+    0 4px 14px var(--shadow-hub),
+    0 0 0 1px var(--line);
   color: var(--accent);
   z-index: 2;
 }
@@ -578,7 +712,7 @@ button { cursor: pointer; }
   transform: translateX(-50%);
   background: var(--accent-deep);
   clip-path: polygon(0 4%, 100% 4%, 50% 100%);
-  filter: drop-shadow(0 3px 5px rgba(48, 36, 24, 0.35));
+  filter: drop-shadow(0 3px 5px var(--shadow-pointer));
   z-index: 3;
   pointer-events: none;
 }
@@ -627,7 +761,7 @@ button { cursor: pointer; }
   border: 1px solid var(--line);
   border-radius: 22px;
   background: var(--paper);
-  box-shadow: 0 24px 60px -34px rgba(48, 36, 24, 0.45);
+  box-shadow: 0 24px 60px -34px var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -677,11 +811,11 @@ dialog {
   padding: 24px 22px;
   background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 40px 90px -30px rgba(24, 20, 16, 0.5);
+  box-shadow: 0 40px 90px -30px var(--shadow-dialog);
 }
 
 dialog::backdrop {
-  background: rgba(24, 20, 16, 0.45);
+  background: var(--backdrop);
   backdrop-filter: blur(5px);
 }
 
@@ -722,7 +856,7 @@ dialog::backdrop {
   place-items: center;
   border-radius: 50%;
   background: var(--ink);
-  color: #FFF9F0;
+  color: var(--on-primary);
   font-size: 0.76rem;
   font-weight: 600;
 }
@@ -770,6 +904,7 @@ dialog::backdrop {
   .btn,
   .chip,
   .icon-btn,
+  .theme-toggle,
   .seg span,
   .name-input {
     transition-duration: 0.001ms !important;

@@ -1,15 +1,113 @@
 :root {
   --bg: #F4ECDF;
+  --bg-glow-top: #FCF6EA;
+  --bg-glow-bottom: #EDE2D1;
   --surface: #FFFBF3;
+  --surface-2: #FFFDF7;
+  --surface-hover: #FFFDF8;
   --ink: #231B18;
   --muted: #7B6A5E;
   --wine: #78243A;
   --wine-deep: #5C192B;
   --wine-soft: rgba(120, 36, 58, 0.07);
+  --wine-line: rgba(120, 36, 58, 0.35);
+  --wine-line-soft: rgba(120, 36, 58, 0.3);
+  --wine-line-strong: rgba(120, 36, 58, 0.38);
+  --wine-glow: rgba(120, 36, 58, 0.78);
   --line: rgba(35, 27, 24, 0.12);
+  --line-strong: rgba(35, 27, 24, 0.1);
+  --ink-wash: rgba(35, 27, 24, 0.05);
+  --ink-solid-hover: #3A2C26;
+  --on-ink: #FFF8EE;
+  --on-wine: #FFF6EC;
+  --on-wine-soft: rgba(255, 246, 236, 0.78);
+  --btn-off-bg: #DCCFBD;
+  --btn-off-ink: #8C7C6C;
+  --heart-lost: rgba(35, 27, 24, 0.24);
+  --line-out: rgba(35, 27, 24, 0.2);
+  --muted-line: rgba(123, 106, 94, 0.7);
+  --backdrop: rgba(34, 25, 20, 0.45);
   --shadow: 0 26px 60px -30px rgba(62, 42, 28, 0.45);
+  --shadow-soft: 0 8px 18px -16px rgba(62, 42, 28, 0.6);
+  --shadow-dialog: 0 40px 90px -30px rgba(40, 28, 20, 0.55);
   color-scheme: light;
 }
+
+:root[data-theme="dark"] {
+  --bg: #12100E;
+  --bg-glow-top: #1E1A16;
+  --bg-glow-bottom: #0B0A09;
+  --surface: #1D1916;
+  --surface-2: #262019;
+  --surface-hover: #2A231C;
+  --ink: #F4EBDD;
+  --muted: #A9998A;
+  --wine: #C9768F;
+  --wine-deep: #E7A6B8;
+  --wine-soft: rgba(201, 118, 143, 0.16);
+  --wine-line: rgba(226, 163, 180, 0.4);
+  --wine-line-soft: rgba(226, 163, 180, 0.3);
+  --wine-line-strong: rgba(226, 163, 180, 0.45);
+  --wine-glow: rgba(0, 0, 0, 0.65);
+  --line: rgba(244, 235, 221, 0.14);
+  --line-strong: rgba(244, 235, 221, 0.2);
+  --ink-wash: rgba(255, 255, 255, 0.06);
+  --ink-solid-hover: #FFF6E8;
+  --on-ink: #171310;
+  --on-wine: #171310;
+  --on-wine-soft: rgba(23, 19, 16, 0.86);
+  --btn-off-bg: #2C2621;
+  --btn-off-ink: #8A7A6C;
+  --heart-lost: rgba(244, 235, 221, 0.22);
+  --line-out: rgba(244, 235, 221, 0.2);
+  --muted-line: rgba(169, 153, 138, 0.7);
+  --backdrop: rgba(0, 0, 0, 0.62);
+  --shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.85);
+  --shadow-soft: 0 8px 18px -16px rgba(0, 0, 0, 0.7);
+  --shadow-dialog: 0 40px 90px -30px rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}
+
+/* ---------- Theme toggle ---------- */
+
+.theme-toggle {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+  background: var(--line);
+  color: var(--ink);
+}
+
+.theme-toggle:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--wine);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg { width: 18px; height: 18px; display: block; }
+.theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+/* El toggle vive solo en el inicio; en partida se esconde para no tapar controles. */
+body:has(#viewGame:not([hidden])) .theme-toggle,
+body:has(#viewEnd:not([hidden])) .theme-toggle { display: none !important; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
 * {
   box-sizing: border-box;
@@ -28,7 +126,7 @@ body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
   background:
-    radial-gradient(120% 65% at 50% 0%, #FCF6EA 0%, var(--bg) 58%, #EDE2D1 100%);
+    radial-gradient(120% 65% at 50% 0%, var(--bg-glow-top) 0%, var(--bg) 58%, var(--bg-glow-bottom) 100%);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
@@ -225,7 +323,7 @@ button {
   border: none;
   border-radius: 14px;
   background: var(--ink);
-  color: #FFF8EE;
+  color: var(--on-ink);
   font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
@@ -233,7 +331,7 @@ button {
 }
 
 .btn-add:hover {
-  background: #3A2C26;
+  background: var(--ink-solid-hover);
 }
 
 .btn-add:active {
@@ -286,7 +384,7 @@ button {
   place-items: center;
   border: none;
   border-radius: 50%;
-  background: rgba(35, 27, 24, 0.05);
+  background: var(--ink-wash);
   color: var(--muted);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -352,7 +450,7 @@ button {
 }
 
 .seg-btn:hover {
-  border-color: rgba(120, 36, 58, 0.35);
+  border-color: var(--wine-line);
 }
 
 .seg-btn:active {
@@ -362,12 +460,12 @@ button {
 .seg-btn[aria-pressed="true"] {
   background: var(--wine);
   border-color: var(--wine);
-  color: #FFF6EC;
-  box-shadow: 0 10px 22px -14px rgba(120, 36, 58, 0.8);
+  color: var(--on-wine);
+  box-shadow: 0 10px 22px -14px var(--wine-glow);
 }
 
 .seg-btn[aria-pressed="true"] small {
-  color: rgba(255, 246, 236, 0.78);
+  color: var(--on-wine-soft);
 }
 
 .seg-num {
@@ -413,9 +511,9 @@ button {
 
 .btn-primary {
   background: var(--wine);
-  color: #FFF8EF;
+  color: var(--on-wine);
   padding: 16px 24px;
-  box-shadow: 0 14px 28px -16px rgba(120, 36, 58, 0.75);
+  box-shadow: 0 14px 28px -16px var(--wine-glow);
 }
 
 .btn-primary:hover {
@@ -428,8 +526,8 @@ button {
 }
 
 .btn-primary:disabled {
-  background: #DCCFBD;
-  color: #8C7C6C;
+  background: var(--btn-off-bg);
+  color: var(--btn-off-ink);
   box-shadow: none;
   cursor: not-allowed;
   transform: none;
@@ -451,7 +549,7 @@ button {
 }
 
 .btn-ghost:hover {
-  background: rgba(35, 27, 24, 0.05);
+  background: var(--ink-wash);
   color: var(--ink);
 }
 
@@ -476,6 +574,19 @@ button {
   font-size: 0.7rem;
   line-height: 1.35;
   color: var(--muted);
+}
+
+.credit {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.credit strong {
+  font-weight: 600;
+  color: var(--ink);
 }
 
 /* ---------- Partida ---------- */
@@ -507,7 +618,7 @@ button {
 }
 
 .icon-btn:hover {
-  background: #FFFDF8;
+  background: var(--surface-hover);
 }
 
 .icon-btn:active {
@@ -549,7 +660,7 @@ button {
   flex: none;
   height: 3px;
   border-radius: 999px;
-  background: rgba(35, 27, 24, 0.1);
+  background: var(--line-strong);
   overflow: hidden;
 }
 
@@ -578,7 +689,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 24px;
   background:
-    radial-gradient(120% 90% at 15% 0%, #FFFDF7 0%, var(--surface) 60%);
+    radial-gradient(120% 90% at 15% 0%, var(--surface-2) 0%, var(--surface) 60%);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -713,7 +824,7 @@ button {
 }
 
 .player:hover {
-  border-color: rgba(120, 36, 58, 0.3);
+  border-color: var(--wine-line-soft);
 }
 
 .player:active {
@@ -731,7 +842,7 @@ button {
 
 .player.is-confessed {
   background: var(--wine-soft);
-  border-color: rgba(120, 36, 58, 0.38);
+  border-color: var(--wine-line-strong);
 }
 
 .player.is-confessed .player-name {
@@ -744,7 +855,7 @@ button {
 
 .player.is-out {
   border-style: dashed;
-  border-color: rgba(35, 27, 24, 0.2);
+  border-color: var(--line-out);
   background: transparent;
   cursor: default;
   opacity: 0.72;
@@ -754,7 +865,7 @@ button {
   color: var(--muted);
   text-decoration: line-through;
   text-decoration-thickness: 1px;
-  text-decoration-color: rgba(123, 106, 94, 0.7);
+  text-decoration-color: var(--muted-line);
 }
 
 .player.is-out .hearts {
@@ -792,7 +903,7 @@ button {
 }
 
 .heart.is-lost {
-  color: rgba(35, 27, 24, 0.24);
+  color: var(--heart-lost);
   fill: transparent;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -875,7 +986,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
-  box-shadow: 0 8px 18px -16px rgba(62, 42, 28, 0.6);
+  box-shadow: var(--shadow-soft);
 }
 
 .survivor-name {
@@ -909,7 +1020,7 @@ dialog {
   overflow: hidden;
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 40px 90px -30px rgba(40, 28, 20, 0.55);
+  box-shadow: var(--shadow-dialog);
 }
 
 dialog[open] {
@@ -918,7 +1029,7 @@ dialog[open] {
 }
 
 dialog::backdrop {
-  background: rgba(34, 25, 20, 0.45);
+  background: var(--backdrop);
   backdrop-filter: blur(5px);
 }
 
@@ -966,7 +1077,7 @@ dialog::backdrop {
   place-items: center;
   border-radius: 50%;
   background: var(--wine);
-  color: #FFF6EC;
+  color: var(--on-wine);
   font-size: 0.75rem;
   font-weight: 600;
 }
