@@ -1,0 +1,447 @@
+"use strict";
+
+// Frases de Yo Nunca, agrupadas por intensidad.
+// Cada nivel tiene 120 frases únicas y completas: no hay placeholders.
+// Los temas están separados a propósito: cada bloque de 10 frases evita
+// repetir el tema de los otros niveles.
+// Picante es +18: insinuación y humor, nunca explicitud ni violencia.
+
+window.YO_NUNCA_DATA = {
+  suave: [
+    // Comida y mate
+    "Yo nunca… me comí la última porción y dije que no quedaba nada.",
+    "Yo nunca… tomé mate frío por no levantarme a calentar el agua.",
+    "Yo nunca… pedí pizza con ananá y la defendí delante de todos.",
+    "Yo nunca… me hice un sándwich de milanesa a las once de la noche.",
+    "Yo nunca… probé la comida del perro para ver de qué se trataba.",
+    "Yo nunca… me comí el helado que era para el cumpleaños.",
+    "Yo nunca… me peleé con alguien por la última factura de grasa.",
+    "Yo nunca… endulcé el mate de alguien de broma y me hice el desentendido.",
+    "Yo nunca… calenté la pizza en la tostadora y casi prendo fuego la cocina.",
+    "Yo nunca… dije que había cocinado yo cuando era todo comprado.",
+
+    // Pantallas y celular
+    "Yo nunca… me quedé sin batería justo cuando tenía que mandar un mensaje importante.",
+    "Yo nunca… escaneé un código QR sin saber qué era.",
+    "Yo nunca… me sabía de memoria la contraseña del wifi de un vecino.",
+    "Yo nunca… dije que había visto una serie para poder opinar en la sobremesa.",
+    "Yo nunca… apreté enviar y me arrepentí en el mismo segundo.",
+    "Yo nunca… usé el celular en el baño y lo apoyé en un lugar cuestionable.",
+    "Yo nunca… le puse nombre a mi celular como si fuera una mascota.",
+    "Yo nunca… me desperté a las tres de la mañana para ver si me habían respondido.",
+    "Yo nunca… borré una app para no distraerme y la instalé de nuevo a la hora.",
+    "Yo nunca… le presté el celular a alguien y me quedé mirando cada movimiento.",
+
+    // Casa y tareas
+    "Yo nunca… escondí la ropa sucia en el placard cuando venían visitas.",
+    "Yo nunca… lavé los platos y los dejé secándose hasta que se usaron de nuevo.",
+    "Yo nunca… regué una planta de plástico durante semanas.",
+    "Yo nunca… tendí la ropa justo antes de que lloviera y la dejé dos días ahí.",
+    "Yo nunca… barrí todo debajo de la alfombra.",
+    "Yo nunca… cambié las sábanas y me sentí una persona nueva.",
+    "Yo nunca… usé la misma toalla hasta que se paró sola.",
+    "Yo nunca… ordené todo el cuarto a las dos de la mañana en vez de dormir.",
+    "Yo nunca… dejé un vaso en el cuarto y lo encontré con una civilización adentro.",
+    "Yo nunca… le puse nombre a la mancha de la pared.",
+
+    // Bondi, subte, bici
+    "Yo nunca… me subí al colectivo equivocado y me di cuenta cinco paradas después.",
+    "Yo nunca… le cedí el asiento a alguien y después me arrepentí.",
+    "Yo nunca… corrí para alcanzar el bondi y lo vi irse igual.",
+    "Yo nunca… viajé sin saludar al chofer por vergüenza.",
+    "Yo nunca… me quedé dormido en el subte y aparecí en la punta de la línea.",
+    "Yo nunca… me subí a la bici y me di cuenta de que no sabía frenar bien.",
+    "Yo nunca… me subí al colectivo y me di cuenta en el medio de que no tenía saldo.",
+    "Yo nunca… me hice el que no escuchaba para no dar indicaciones en la calle.",
+    "Yo nunca… crucé en rojo delante de un nene y me miró mal todo el barrio.",
+    "Yo nunca… me bajé un par de paradas antes para caminar y estirar las piernas.",
+
+    // Trabajo y estudio
+    "Yo nunca… dormí con los ojos abiertos en una reunión.",
+    "Yo nunca… entregué un trabajo con la bibliografía inventada.",
+    "Yo nunca… mandé un mail con el nombre de otra persona en la firma.",
+    "Yo nunca… dije que lo tenía listo y lo terminé diez minutos después.",
+    "Yo nunca… me hice el que estaba en una llamada para no hablar con nadie.",
+    "Yo nunca… estudié la noche anterior y juré que no lo volvía a hacer.",
+    "Yo nunca… copié en un examen y miré al techo como si nada.",
+    "Yo nunca… dejé el micrófono abierto y se escuchó mi casa entera.",
+    "Yo nunca… pedí vacaciones y me quedé trabajando igual.",
+    "Yo nunca… me quedé dormido en la biblioteca y me despertó el de seguridad.",
+
+    // Vergüenzas cotidianas
+    "Yo nunca… hablé solo en voz alta y me contesté.",
+    "Yo nunca… tropecé en la calle y miré atrás como si me hubieran empujado.",
+    "Yo nunca… saludé a alguien que no era quien pensaba.",
+    "Yo nunca… canté en el auto como si estuviera en un estadio.",
+    "Yo nunca… me reí solo en el colectivo acordándome de algo.",
+    "Yo nunca… me quedé con la mano estirada para chocar los cinco con nadie.",
+    "Yo nunca… dije «dale, nos vemos» y no nos vimos nunca más.",
+    "Yo nunca… me equivoqué de nombre al saludar y seguí como si nada.",
+    "Yo nunca… aplaudí cuando el avión aterrizó y todos me miraron.",
+    "Yo nunca… me puse la remera al revés y lo descubrí al final del día.",
+
+    // Mentiras blancas
+    "Yo nunca… dije «me encantó tu regalo» sin saber qué era.",
+    "Yo nunca… dije «estoy en camino» desde la cama.",
+    "Yo nunca… dije que no me molestaba cuando me molestaba bastante.",
+    "Yo nunca… fingí que me acordaba del cumpleaños de alguien.",
+    "Yo nunca… dije que había leído un libro que solo miré en el resumen.",
+    "Yo nunca… dije que ya había comido para no quedarme a cenar.",
+    "Yo nunca… fingí una llamada para irme de una juntada.",
+    "Yo nunca… dije «te aviso» sabiendo que no iba a avisar.",
+    "Yo nunca… dije que se me había perdido el mensaje.",
+    "Yo nunca… contesté «todo bien» con la cara de todo mal.",
+
+    // Familia y amistades
+    "Yo nunca… espié los regalos antes de Navidad.",
+    "Yo nunca… le conté un secreto a alguien que juré no contarle.",
+    "Yo nunca… le cambié el nombre a un contacto para que no se leyera.",
+    "Yo nunca… me olvidé del cumpleaños de mi mejor amigo.",
+    "Yo nunca… me hice el dormido para no ir a un almuerzo familiar.",
+    "Yo nunca… discutí por una pavada y no di el brazo a torcer por días.",
+    "Yo nunca… usé la excusa de tener que estudiar para no ir a un cumpleaños.",
+    "Yo nunca… le presté plata a un amigo y nunca se la cobré.",
+    "Yo nunca… me reí de una foto vieja de alguien de mi familia.",
+    "Yo nunca… llamé «hermano» a alguien que conocía hace diez minutos.",
+
+    // Sueño y siesta
+    "Yo nunca… dormí una siesta de cuatro horas y me desperté convencido de que era otro día.",
+    "Yo nunca… me dormí mirando el celular y me desperté con el video todavía andando.",
+    "Yo nunca… puse tres alarmas y apagué las tres dormido.",
+    "Yo nunca… dormí con medias porque tenía frío y paja de buscar las pantuflas.",
+    "Yo nunca… soñé que me levantaba y seguí durmiendo.",
+    "Yo nunca… me quedé dormido en una película en el cine.",
+    "Yo nunca… dormí la siesta en el trabajo y dije que había ido al baño.",
+    "Yo nunca… me fui a dormir a las nueve y me desperté a la una pensando que era la mañana.",
+    "Yo nunca… hablé dormido algo que después me contaron.",
+    "Yo nunca… me desperté antes que el despertador y me quedé esperando con bronca.",
+
+    // Mascotas y plantas
+    "Yo nunca… le hablé a una planta para que creciera.",
+    "Yo nunca… le di de comer a un perro ajeno sin preguntar.",
+    "Yo nunca… imité a mi mascota en una reunión familiar.",
+    "Yo nunca… dejé que el gato durmiera en mi almohada y me corrí yo.",
+    "Yo nunca… le puse nombre de persona a un animal y lo traté como tal.",
+    "Yo nunca… busqué en internet si mi perro me quería de verdad.",
+    "Yo nunca… le saqué una foto a una planta porque estaba linda ese día.",
+    "Yo nunca… me peleé con mi mascota porque me ignoró.",
+    "Yo nunca… le canté a un perro para que dejara de llorar.",
+    "Yo nunca… adopté una planta y la primera semana la revisé tres veces por día.",
+
+    // Baile, canto y karaoke
+    "Yo nunca… bailé solo en la cocina con la cuchara de micrófono.",
+    "Yo nunca… canté una canción entera sin saber la letra.",
+    "Yo nunca… me sabía la coreografía de un video de hace quince años.",
+    "Yo nunca… canté en el karaoke y elegí el tema más difícil a propósito.",
+    "Yo nunca… me puse a bailar en un casamiento antes que los novios.",
+    "Yo nunca… hice playback frente al espejo y me sentí una estrella.",
+    "Yo nunca… aplaudí mi propia performance en el karaoke.",
+    "Yo nunca… me aprendí la letra de un jingle y la canté en la ducha.",
+    "Yo nunca… bailé en una fiesta de quince y quedé en un video.",
+    "Yo nunca… me quedé parado en la pista esperando que pusieran mi canción.",
+
+    // Compras y ofertas
+    "Yo nunca… compré ropa que nunca me puse y dejé la etiqueta puesta.",
+    "Yo nunca… entré a un probador con ocho prendas y salí con ninguna.",
+    "Yo nunca… compré algo solo porque estaba en oferta.",
+    "Yo nunca… probé un perfume y me fui sin comprar nada.",
+    "Yo nunca… pedí bolsa de regalo para un regalo que era para mí.",
+    "Yo nunca… compré el mismo libro dos veces porque me olvidé.",
+    "Yo nunca… me hice el que estaba mirando vidriera para no comprar nada.",
+    "Yo nunca… pagué en cuotas algo que podía pagar de una.",
+    "Yo nunca… devolví algo usado y dije que no lo había abierto.",
+    "Yo nunca… compré algo y a la semana lo vi más barato en otro lado."
+  ],
+
+  media: [
+    // Alcohol y salidas
+    "Yo nunca… me tomé una birra y juré que era la última.",
+    "Yo nunca… mandé un mensaje a las tres de la mañana y me hice el dormido al otro día.",
+    "Yo nunca… mezclé fernet con champagne y aprendí una lección.",
+    "Yo nunca… me quedé dormido en el boliche, en un sillón.",
+    "Yo nunca… dije que no tomaba más y a la hora estaba abriendo otra.",
+    "Yo nunca… me tomé el trago de alguien pensando que era mío.",
+    "Yo nunca… pedí un taxi y me bajé dos cuadras después.",
+    "Yo nunca… me desperté con un número nuevo en el teléfono y ninguna pista.",
+    "Yo nunca… canté el feliz cumpleaños con más ganas que el homenajeado.",
+    "Yo nunca… me fui de una fiesta sin saludar a la dueña de casa.",
+
+    // Exs y celos digitales
+    "Yo nunca… busqué a mi ex en las redes a las dos de la mañana.",
+    "Yo nunca… miré las fotos de la pareja nueva de mi ex.",
+    "Yo nunca… le mandé un mensaje a mi ex y lo borré para todos.",
+    "Yo nunca… dije que estaba re bien cuando me crucé con mi ex.",
+    "Yo nunca… guardé una foto de mi ex en una carpeta escondida.",
+    "Yo nunca… revisé si mi ex estaba en línea.",
+    "Yo nunca… le conté a mi pareja que había visto a mi ex y omití un detalle.",
+    "Yo nunca… comparé a alguien con mi ex en voz alta.",
+    "Yo nunca… me puse celoso por un like.",
+    "Yo nunca… le pregunté a un amigo cómo estaba mi ex y me hice el desinteresado.",
+
+    // Mentiras grandes
+    "Yo nunca… le dije a mis viejos que dormía en lo de un amigo y no era así.",
+    "Yo nunca… dije que estaba enfermo para no ir a trabajar.",
+    "Yo nunca… mentí sobre mi edad para entrar a un lugar.",
+    "Yo nunca… dije que había terminado la facultad cuando me faltaba una materia.",
+    "Yo nunca… inventé una emergencia para cancelar un plan.",
+    "Yo nunca… dije que el auto se había roto para no manejar hasta allá.",
+    "Yo nunca… oculté que había fumado toda la noche.",
+    "Yo nunca… dije que había ido al gimnasio y solo pasé por la puerta.",
+    "Yo nunca… dije que sabía cocinar y después pedí delivery.",
+    "Yo nunca… mentí sobre dónde había estado el fin de semana.",
+
+    // Plata
+    "Yo nunca… dije que había pagado mi parte y no la había pagado.",
+    "Yo nunca… pedí prestado y me olvidé de devolver.",
+    "Yo nunca… dividí la cuenta y puse menos de lo que consumí.",
+    "Yo nunca… compré algo caro y lo escondí en el fondo del placard.",
+    "Yo nunca… dije que me habían regalado algo que compré yo.",
+    "Yo nunca… fingí no tener plata para no ir a un cumpleaños.",
+    "Yo nunca… pagué todo con tarjeta y después no quise mirar el resumen.",
+    "Yo nunca… le cobré a un amigo algo que había salido gratis.",
+    "Yo nunca… aposté con plata y dije que era solo por diversión.",
+    "Yo nunca… encontré plata en la calle y me la guardé sin culpa.",
+
+    // Trabajo
+    "Yo nunca… busqué otro trabajo en horario laboral.",
+    "Yo nunca… dije que estaba en una reunión y estaba mirando series.",
+    "Yo nunca… me hice el que no vio el mensaje del jefe.",
+    "Yo nunca… salí antes y dejé la computadora prendida.",
+    "Yo nunca… me llevé papel higiénico de la oficina.",
+    "Yo nunca… usé la impresora del trabajo para imprimir un trabajo de la facultad.",
+    "Yo nunca… me adjudiqué una idea que era de un compañero.",
+    "Yo nunca… dije que había mandado un mail que quedó en borrador.",
+    "Yo nunca… en una entrevista dije que sabía usar un programa que nunca abrí.",
+    "Yo nunca… me quedé con el crédito de un laburo que hizo otro.",
+
+    // Fiestas y papelones
+    "Yo nunca… me quedé dormido en el baño de una fiesta.",
+    "Yo nunca… entré a una fiesta sin estar invitado.",
+    "Yo nunca… rompí algo en una casa y lo acomodé para que no se notara.",
+    "Yo nunca… me caí en la pista y seguí bailando desde el piso.",
+    "Yo nunca… me equivoqué de casa y toqué el timbre igual.",
+    "Yo nunca… me fui con el abrigo de otra persona.",
+    "Yo nunca… hice un brindis largo y aburrido sin darme cuenta.",
+    "Yo nunca… me quedé hasta el final para comer lo que sobró.",
+    "Yo nunca… me metí a la pileta con la ropa puesta.",
+    "Yo nunca… me tuve que ir de una fiesta por algo que dije.",
+
+    // Higiene y pereza
+    "Yo nunca… me quedé sin bañarme un día entero por paja.",
+    "Yo nunca… me puse la misma remera dos días seguidos y la disimulé.",
+    "Yo nunca… me lavé el pelo con jabón de manos.",
+    "Yo nunca… usé el desodorante de otra persona.",
+    "Yo nunca… me cepillé los dientes con el dedo porque no encontraba el cepillo.",
+    "Yo nunca… me sequé con la toalla de la cocina.",
+    "Yo nunca… me fui a dormir sin sacarme el maquillaje y al otro día lo arreglé.",
+    "Yo nunca… me puse la ropa del canasto porque todavía estaba limpia.",
+    "Yo nunca… me afeité las piernas solo hasta donde se iba a ver.",
+    "Yo nunca… me limpié los zapatos con la remera antes de entrar a una casa.",
+
+    // Vínculos y chats
+    "Yo nunca… dejé en visto a alguien a propósito.",
+    "Yo nunca… ghosteé a alguien sin dar ninguna explicación.",
+    "Yo nunca… contesté «jaja» y cerré la conversación.",
+    "Yo nunca… borré un chat entero para que no lo vieran.",
+    "Yo nunca… le mostré una conversación a alguien que no debía verla.",
+    "Yo nunca… le mandé un mensaje a la persona equivocada con el nombre correcto.",
+    "Yo nunca… dije «te escribo al rato» y no escribí en tres días.",
+    "Yo nunca… reaccioné con un like a una foto de hace cuatro años.",
+    "Yo nunca… silencié a alguien y seguí mirando sus historias.",
+    "Yo nunca… fingí no haber visto a alguien en la calle.",
+
+    // Familia
+    "Yo nunca… leí los mensajes del teléfono de mi mamá.",
+    "Yo nunca… escuché una conversación ajena desde la habitación de al lado.",
+    "Yo nunca… le dije a mi hermano que se lo iban a decir nuestros viejos y no era cierto.",
+    "Yo nunca… abrí un cajón que no era mío.",
+    "Yo nunca… usé la ropa de mi hermano sin devolverla.",
+    "Yo nunca… le conté a mi familia una versión editada de una pelea.",
+    "Yo nunca… me hice el que no escuchó una discusión y seguí comiendo.",
+    "Yo nunca… le dije a mi abuela que la comida estaba rica y no la terminé.",
+    "Yo nunca… vendí algo de la casa sin preguntar.",
+    "Yo nunca… encontré plata en un cajón y no dije nada.",
+
+    // Redes
+    "Yo nunca… tuve una cuenta falsa para mirar a alguien.",
+    "Yo nunca… revisé los likes de una foto vieja de mi pareja.",
+    "Yo nunca… subí una foto y la borré a los cinco minutos.",
+    "Yo nunca… stalkeé a alguien hasta las fotos de 2013.",
+    "Yo nunca… bloqueé a alguien y después lo desbloqueé para ver qué hacía.",
+    "Yo nunca… me hice pasar por otra persona en un chat.",
+    "Yo nunca… le di like sin querer a una foto de hace años y entré en pánico.",
+    "Yo nunca… dejé de seguir a alguien para que se diera cuenta.",
+    "Yo nunca… miré el perfil de alguien desde el celular de un amigo.",
+    "Yo nunca… publiqué una indirecta y esperé que la entendiera una sola persona.",
+
+    // Travesuras menores
+    "Yo nunca… me llevé un vaso de un bar.",
+    "Yo nunca… me guardé los sachets de mostaza del mostrador.",
+    "Yo nunca… usé el wifi de un vecino que no tenía contraseña.",
+    "Yo nunca… me metí en una fila más corta con la excusa de solo preguntar.",
+    "Yo nunca… me quedé con el vuelto de más y no dije nada.",
+    "Yo nunca… me subí al tren sin pagar porque no había nadie.",
+    "Yo nunca… me llevé las servilletas y el azúcar de un café.",
+    "Yo nunca… agarré una flor del jardín de una casa y salí corriendo.",
+    "Yo nunca… usé una tarjeta de estacionamiento ajena.",
+    "Yo nunca… me llevé una silla de un bar a la vereda y la devolví.",
+
+    // Viajes
+    "Yo nunca… llegué tarde al aeropuerto y perdí el vuelo.",
+    "Yo nunca… dije que había reservado un hotel y dormí en lo de un amigo.",
+    "Yo nunca… me quedé con la llave del departamento alquilado.",
+    "Yo nunca… me llevé un jabón del hotel.",
+    "Yo nunca… dije que no llevaba comida en la valija.",
+    "Yo nunca… me subí al tren equivocado en otro país.",
+    "Yo nunca… pedí indicaciones y seguí la dirección contraria.",
+    "Yo nunca… compartí un cuarto con alguien y le robé las mantas.",
+    "Yo nunca… me fui de un hotel sin devolver la toalla.",
+    "Yo nunca… me quedé dormido en una terminal y perdí el micro."
+  ],
+
+  picante: [
+    // Lugares inesperados
+    "Yo nunca… tuve un momento íntimo en la casa de mis suegros.",
+    "Yo nunca… lo hice en un balcón con vista a la calle.",
+    "Yo nunca… me metí al mar de noche con intenciones que no eran nadar.",
+    "Yo nunca… usé el probador de una tienda para algo más que probarme ropa.",
+    "Yo nunca… me quedé a solas en una oficina después de hora por motivos poco laborales.",
+    "Yo nunca… lo hice en un auto estacionado en una calle tranquila.",
+    "Yo nunca… me escapé de una fiesta a un cuarto que no era mío.",
+    "Yo nunca… compartí un sillón de cine con alguien y no vi la película.",
+    "Yo nunca… me besé en un ascensor y apreté todos los pisos para que dure.",
+    "Yo nunca… tuve un encuentro en una casa compartida con todos dormidos.",
+
+    // Juguetes, lencería y disfraces
+    "Yo nunca… compré lencería y nunca la usé.",
+    "Yo nunca… guardé un juguete en un cajón que cualquiera abre.",
+    "Yo nunca… me disfracé para una noche y me sentí ridículo y poderoso a la vez.",
+    "Yo nunca… mandé a pedir un paquete y lo recibió otra persona.",
+    "Yo nunca… usé algo prestado que no pensaba devolver.",
+    "Yo nunca… tuve una conversación muy seria sobre qué comprar en una sex shop.",
+    "Yo nunca… me puse un conjunto nuevo y lo mostré antes de estrenarlo.",
+    "Yo nunca… escondí algo en un lugar tan raro que después no lo encontré.",
+    "Yo nunca… le compré algo a mi pareja y lo probé antes.",
+    "Yo nunca… me reí en el momento menos indicado por un accesorio.",
+
+    // Fotos y videos
+    "Yo nunca… mandé una foto íntima y pedí que la borraran.",
+    "Yo nunca… guardé una foto que me mandaron y nunca lo dije.",
+    "Yo nunca… me saqué una foto pensando en mandarla y me arrepentí.",
+    "Yo nunca… revisé la galería de alguien con permiso y vi más de lo esperado.",
+    "Yo nunca… borré una foto de un chat para no dejar rastro.",
+    "Yo nunca… tuve una videollamada que no era de trabajo.",
+    "Yo nunca… me filmé y después miré el video como si fuera un extraño.",
+    "Yo nunca… mandé un audio que era para otra persona.",
+    "Yo nunca… recibí una foto a la hora equivocada y no dije nada.",
+    "Yo nunca… tuve que explicar una notificación comprometedora.",
+
+    // Fantasías y juego de roles
+    "Yo nunca… le conté una fantasía a alguien y me arrepentí al instante.",
+    "Yo nunca… fingí ser otra persona en la intimidad.",
+    "Yo nunca… propuse algo y después me hice el que estaba jodiendo.",
+    "Yo nunca… tuve un sueño con alguien de mi trabajo y no pude mirarlo igual.",
+    "Yo nunca… escribí una fantasía en el teléfono y la dejé ahí.",
+    "Yo nunca… me imaginé una escena entera con alguien que tenía al lado.",
+    "Yo nunca… pedí algo con una voz que no era la mía.",
+    "Yo nunca… hice un juego de roles y me costó salir del personaje.",
+    "Yo nunca… le pedí a alguien que se quedara hasta la mañana.",
+    "Yo nunca… me quedé pensando en una escena de una serie más de la cuenta.",
+
+    // Reencuentros
+    "Yo nunca… volví con alguien del pasado solo por costumbre.",
+    "Yo nunca… tuve un reencuentro en una fiesta y no avisé a nadie.",
+    "Yo nunca… me acosté con alguien y al otro día me hice el distante.",
+    "Yo nunca… comparé a alguien con otra persona en la cama.",
+    "Yo nunca… me quedé a dormir en lo de alguien para no volver solo a casa.",
+    "Yo nunca… le escribí a alguien del pasado para cerrar bien y no cerré nada.",
+    "Yo nunca… me encontré con alguien del pasado y dije que había sido solo un café.",
+    "Yo nunca… pensé en alguien del pasado en el momento más inoportuno.",
+    "Yo nunca… revisé el teléfono de alguien con quien vivía.",
+    "Yo nunca… me fui de vacaciones con alguien del pasado y lo llamé amigo frente a todos.",
+
+    // Apps y encuentros casuales
+    "Yo nunca… instalé una app de citas y la desinstalé al día siguiente.",
+    "Yo nunca… quedé con alguien de una app y llegué tarde a propósito.",
+    "Yo nunca… usé la foto de otra época en mi perfil.",
+    "Yo nunca… dije que medía más de lo que mido.",
+    "Yo nunca… tuve dos conversaciones en paralelo con la misma persona.",
+    "Yo nunca… me fui de una cita al baño y avisé a una amiga para que me llamara.",
+    "Yo nunca… le mentí a alguien sobre lo que buscaba.",
+    "Yo nunca… me encontré con alguien y no era para nada la foto.",
+    "Yo nunca… borré la app y la instalé de nuevo esa misma noche.",
+    "Yo nunca… me hice el interesante contando una historia que no pasó.",
+
+    // Oficina
+    "Yo nunca… tuve algo con alguien del trabajo y lo mantuve en secreto.",
+    "Yo nunca… me quedé después de hora con un compañero por una razón que no era el proyecto.",
+    "Yo nunca… me imaginé cosas con mi jefe o jefa.",
+    "Yo nunca… mandé un mensaje subido de tono a la persona equivocada del trabajo.",
+    "Yo nunca… me escapé de una reunión para responder un mensaje que no era de trabajo.",
+    "Yo nunca… usé la sala de reuniones para algo distinto a reunirme.",
+    "Yo nunca… tuve un romance de oficina que todos veían menos nosotros.",
+    "Yo nunca… me quedé dormido al lado de alguien del trabajo sin que fuera una pareja.",
+    "Yo nunca… recibí una mirada cómplice en una videollamada.",
+    "Yo nunca… salí de la oficina sin decir adónde iba y volví con la ropa arrugada.",
+
+    // Cuerpo y autoestima
+    "Yo nunca… me probé ropa interior nueva frente a una cámara.",
+    "Yo nunca… me depilé a las apuradas porque esa noche no era para dormir.",
+    "Yo nunca… usé una fragancia que me recordaba a alguien.",
+    "Yo nunca… me miré al espejo y ensayé una cara que después no usé.",
+    "Yo nunca… me compré ropa de cama nueva y no fue para dormir mejor.",
+    "Yo nunca… hice ejercicio esperando un resultado que no era físico.",
+    "Yo nunca… me puse perfume antes de una videollamada.",
+    "Yo nunca… tuve una marca visible y la tapé con maquillaje.",
+    "Yo nunca… me sentí más lindo después de un mensaje de esa persona.",
+    "Yo nunca… me saqué una selfie y la borré porque era demasiado.",
+
+    // Fingir y vergüenzas
+    "Yo nunca… fingí que me gustó más de lo que me gustó.",
+    "Yo nunca… dije el nombre de otra persona y lo tapé con un beso.",
+    "Yo nunca… me quedé dormido en el peor momento.",
+    "Yo nunca… me reí en pleno acto por algo que no venía al caso.",
+    "Yo nunca… tuve que salir a comprar algo urgente al kiosco de la esquina.",
+    "Yo nunca… fingí estar en casa cuando estaba a cuatro cuadras.",
+    "Yo nunca… me quedé con las ganas y lo dije como si nada.",
+    "Yo nunca… apagué la luz para no ser visto.",
+    "Yo nunca… me fui sin despedirme de la persona con la que estaba.",
+    "Yo nunca… me desperté y no sabía bien dónde estaba.",
+
+    // Porno, hábitos y privacidad
+    "Yo nunca… tuve que borrar el historial del navegador a las apuradas.",
+    "Yo nunca… abrí una pestaña que no era para el trabajo y alguien la vio.",
+    "Yo nunca… me quedé despierto más de la cuenta por una búsqueda.",
+    "Yo nunca… usé el modo incógnito para algo que no era comprar un regalo.",
+    "Yo nunca… busqué algo que me dio un poco de vergüenza.",
+    "Yo nunca… me tapé la pantalla cuando alguien pasó por atrás.",
+    "Yo nunca… compartí una cuenta y olvidé cerrar sesión.",
+    "Yo nunca… tuve una charla con amigos que no se puede contar.",
+    "Yo nunca… dije que no consumía y me descubrieron.",
+    "Yo nunca… me di cuenta de que el volumen estaba alto en un lugar público.",
+
+    // Amigos y vínculos
+    "Yo nunca… me besé con un amigo y al otro día hicimos como si nada.",
+    "Yo nunca… tuve un amigo con derechos y lo negué frente a todos.",
+    "Yo nunca… me atrajo la pareja de un amigo.",
+    "Yo nunca… salí con dos personas a la vez y me dijeron cosas parecidas.",
+    "Yo nunca… estuve en una situación de a tres y no la conté igual.",
+    "Yo nunca… le presenté a alguien mi mejor amigo con segundas intenciones.",
+    "Yo nunca… me quedé en una casa solo por quien estaba en la otra habitación.",
+    "Yo nunca… tuve una charla de qué somos después de una noche.",
+    "Yo nunca… le conté un detalle de más a una amiga y después me arrepentí.",
+    "Yo nunca… me enteré de algo por un grupo de WhatsApp y me hice el sorprendido.",
+
+    // Después del encuentro
+    "Yo nunca… me fui antes del desayuno.",
+    "Yo nunca… me quedé dormido y me desperté con el otro ya vestido.",
+    "Yo nunca… pedí un taxi a las cuatro de la mañana y salí sin hacer ruido.",
+    "Yo nunca… desayuné con la familia de alguien que había conocido esa misma noche.",
+    "Yo nunca… me olvidé el celular en una casa y tuve que volver.",
+    "Yo nunca… mandé un mensaje al otro día y me dejaron en visto.",
+    "Yo nunca… dije «nos vemos pronto» sin ninguna intención.",
+    "Yo nunca… me quedé mirando el techo pensando cómo irme.",
+    "Yo nunca… me quedé en silencio en el auto de vuelta, sin saber qué decir.",
+    "Yo nunca… le conté a alguien un casi algo que nunca fue."
+  ]
+};
