@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F1E9">
+  <script>
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("charadas-theme"); } catch (e) {}
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      if (theme === "dark") {
+        document.documentElement.dataset.theme = "dark";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", "#12110F");
+      }
+    })();
+  </script>
+  <meta name="description" content="Charadas: mímica contra reloj para jugar en grupo con un solo celular. Elegí categoría, duración y a actuar.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Charadas — Mímica contra reloj</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231B1917'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='46' fill='%23F6F1E9' text-anchor='middle'%3ECH%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+    </svg>
+  </button>
+
+  <div class="app">
+    <!-- SETUP -->
+    <main class="view setup" id="viewSetup">
+      <header class="setup-head">
+        <p class="kicker">Mímica contra reloj</p>
+        <h1 class="wordmark">Charadas</h1>
+        <p class="lead">El celular va en la frente, el grupo adivina y el reloj corre. Un minuto y a moverse.</p>
+      </header>
+
+      <section class="field" aria-labelledby="catLabel">
+        <div class="field-head">
+          <h2 class="field-title" id="catLabel">Categoría</h2>
+          <span class="field-note" id="recordNote"></span>
+        </div>
+        <div class="chips" id="catChips" role="radiogroup" aria-labelledby="catLabel"></div>
+      </section>
+
+      <section class="field" aria-labelledby="durLabel">
+        <div class="field-head">
+          <h2 class="field-title" id="durLabel">Duración</h2>
+          <span class="field-note">por ronda</span>
+        </div>
+        <div class="segmented" id="durGroup" role="radiogroup" aria-labelledby="durLabel"></div>
+      </section>
+
+      <section class="sensor-row" id="sensorRow" hidden>
+        <div class="sensor-copy">
+          <p class="sensor-title" id="sensorTitle">Inclinar para pasar</p>
+          <p class="sensor-sub">Sensor del celular, opcional</p>
+        </div>
+        <button class="switch" id="sensorBtn" type="button" role="switch" aria-checked="false" aria-labelledby="sensorTitle">
+          <span class="switch-knob"></span>
+        </button>
+      </section>
+      <p class="sensor-note" id="sensorNote" hidden></p>
+
+      <div class="setup-actions">
+        <button class="btn btn-primary btn-xl" id="startBtn" type="button">Empezar</button>
+        <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
+      </div>
+
+      <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
+    </main>
+
+    <!-- PLAY -->
+    <section class="view play" id="viewPlay" hidden>
+      <header class="play-top">
+        <div class="timer" id="timer" role="timer" aria-label="Tiempo restante">
+          <svg class="timer-ring" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="ring-track" cx="50" cy="50" r="44"></circle>
+            <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="44"></circle>
+          </svg>
+          <span class="timer-num" id="timerNum">60</span>
+        </div>
+
+        <div class="score">
+          <span class="score-num" id="scoreNum">0</span>
+          <span class="score-label">acertadas</span>
+        </div>
+
+        <button class="icon-btn" id="quitBtn" type="button" aria-label="Terminar la ronda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18"/>
+          </svg>
+        </button>
+      </header>
+
+      <div class="stage" id="stage">
+        <span class="stage-cat" id="stageCat">Mezcla</span>
+        <div class="word-box" id="wordBox">
+          <p class="word" id="word" aria-live="polite" aria-atomic="true"></p>
+        </div>
+        <span class="stage-legend" id="tiltLegend" hidden>Incliná el celular hacia abajo para pasar</span>
+      </div>
+
+      <div class="zones">
+        <button class="zone zone-hit" id="hitBtn" type="button">
+          <span class="zone-main">Alcancé</span>
+          <span class="zone-sub">+1</span>
+        </button>
+        <button class="zone zone-pass" id="passBtn" type="button">
+          <span class="zone-main">Paso</span>
+          <span class="zone-sub">sin resta</span>
+        </button>
+      </div>
+
+      <div class="pause-veil" id="pauseVeil" hidden>
+        <p class="pause-kicker">En pausa</p>
+        <p class="pause-text">La ronda se frenó.<br>El reloj también.</p>
+        <button class="btn btn-primary btn-xl" id="resumeBtn" type="button">Seguir</button>
+      </div>
+    </section>
+
+    <!-- END -->
+    <section class="view end" id="viewEnd" hidden>
+      <p class="kicker">Ronda terminada</p>
+      <div class="end-score">
+        <span class="end-num" id="endNum">0</span>
+        <span class="end-label">acertadas</span>
+      </div>
+      <p class="end-record" id="endRecord"></p>
+
+      <div class="end-lists">
+        <section class="result-col" aria-labelledby="hitHead">
+          <h2 class="result-head result-head-hit" id="hitHead">Alcancé <span class="result-count" id="hitCount">0</span></h2>
+          <ul class="result-list" id="hitList"></ul>
+        </section>
+        <section class="result-col" aria-labelledby="passHead">
+          <h2 class="result-head result-head-pass" id="passHead">Paso <span class="result-count" id="passCount">0</span></h2>
+          <ul class="result-list" id="passList"></ul>
+        </section>
+      </div>
+
+      <div class="end-actions">
+        <button class="btn btn-primary btn-xl" id="againBtn" type="button">Otra ronda</button>
+        <button class="btn btn-ghost" id="adjustBtn" type="button">Cambiar ajustes</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown" id="countdown" hidden>
+    <p class="countdown-label" id="countLabel">Preparate</p>
+    <p class="countdown-num" id="countNum" aria-live="assertive">3</p>
+    <p class="countdown-tip">El celular va en la frente, mirando al grupo.</p>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <dialog id="howDialog">
+    <h2 class="dialog-title">Cómo se juega</h2>
+    <ol class="steps">
+      <li><strong>Elegí categoría y duración.</strong> Mezcla agarra un poco de todo.</li>
+      <li><strong>Apoyá el celular en la frente</strong> con la pantalla hacia el grupo. También vale sostenerlo mirando al grupo: la palabra es para ellos, no para vos.</li>
+      <li><strong>El grupo hace mímica y da pistas.</strong> Cuando la sacan, alguien toca <strong>Alcancé</strong>. Si se traban, <strong>Paso</strong>: no resta nada.</li>
+      <li><strong>Cuando suena el final</strong>, contás los aciertos y ves la mejor marca de esa categoría.</li>
+    </ol>
+    <p class="dialog-tip">El sensor de inclinación es opcional: si lo activás, inclinar el celular hacia abajo pasa la palabra. Los botones siguen estando siempre, así que el juego nunca depende del sensor.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeHowBtn" type="button">Entendido</button>
+    </div>
+  </dialog>
+
+  <noscript>
+    <p class="noscript">Charadas necesita JavaScript para funcionar. Activalo y recargá la página.</p>
+  </noscript>
+
+  <script src="data/words.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
