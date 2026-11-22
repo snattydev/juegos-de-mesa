@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F1E9">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="La Botella: la rueda de siempre, ahora con preguntas. Girá y que la suerte elija quién responde.">
+  <title>La Botella — Girá y respondé</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23B4553A'/%3E%3Ctext x='50' y='70' font-family='Georgia,serif' font-size='54' fill='%23FFF6EA' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- ============ INICIO ============ -->
+    <main class="view setup" id="viewSetup">
+      <header class="brand">
+        <p class="kicker">Juego de juntada</p>
+        <h1 class="wordmark">La Botella</h1>
+        <p class="tagline">Que la suerte elija por vos.</p>
+      </header>
+
+      <div class="setup-scroll">
+        <section class="panel" aria-labelledby="playersTitle">
+          <div class="panel-head">
+            <h2 id="playersTitle">Jugadores</h2>
+            <span class="counter" id="playersCount" aria-live="polite">0 / 12</span>
+          </div>
+
+          <form class="add-form" id="addForm" autocomplete="off" novalidate>
+            <label class="sr-only" for="nameInput">Nombre del jugador</label>
+            <input
+              class="name-input"
+              id="nameInput"
+              type="text"
+              name="name"
+              maxlength="16"
+              placeholder="Nombre"
+              enterkeyhint="done"
+              autocapitalize="words"
+              autocomplete="off"
+              spellcheck="false">
+            <button class="btn btn-add" id="addBtn" type="submit">Agregar</button>
+          </form>
+
+          <ul class="chips" id="chips" aria-label="Jugadores agregados"></ul>
+          <p class="empty-note" id="emptyNote">Todavía no hay nadie. Agregá al menos dos nombres.</p>
+          <p class="field-msg" id="nameMsg" role="status"></p>
+        </section>
+
+        <section class="panel" aria-labelledby="levelTitle">
+          <div class="panel-head">
+            <h2 id="levelTitle">Intensidad</h2>
+          </div>
+
+          <div class="segmented" role="radiogroup" aria-labelledby="levelTitle" id="levelGroup">
+            <label class="seg" style="--level: #5C6B50">
+              <input type="radio" name="level" value="suave" checked>
+              <span>Suave</span>
+            </label>
+            <label class="seg" style="--level: #8A5A1E">
+              <input type="radio" name="level" value="media">
+              <span>Media</span>
+            </label>
+            <label class="seg" style="--level: #93301F">
+              <input type="radio" name="level" value="picante">
+              <span>Picante</span>
+            </label>
+          </div>
+
+          <p class="field-hint" id="levelHint">Para conocer al otro y reírse de recuerdos viejos.</p>
+        </section>
+      </div>
+
+      <div class="dock">
+        <button class="btn btn-primary btn-xl" id="startBtn" type="button" disabled>Empezar</button>
+        <p class="dock-hint" id="startNote">Agregá al menos 2 nombres para empezar.</p>
+        <button class="btn btn-ghost btn-sm" type="button" data-how>Cómo se juega</button>
+      </div>
+    </main>
+
+    <!-- ============ JUEGO ============ -->
+    <section class="view game" id="viewGame" hidden>
+      <header class="game-head">
+        <button class="icon-btn" id="editBtn" type="button" aria-label="Editar jugadores y volver">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="game-meta">
+          <span class="round-label" id="roundLabel">Ronda 1</span>
+          <span class="level-tag" id="levelTag"><i class="dot" aria-hidden="true"></i><span id="levelTagText">Suave</span></span>
+        </div>
+        <button class="icon-btn" type="button" data-how aria-label="Cómo se juega">
+          <span class="glyph" aria-hidden="true">?</span>
+        </button>
+      </header>
+
+      <div class="stage" id="stage">
+        <div class="wheel-wrap" id="wheelWrap">
+          <div class="pointer" aria-hidden="true"></div>
+          <div class="wheel" id="wheel" role="img" aria-label="Rueda de jugadores">
+            <div class="labels" id="wheelLabels" aria-hidden="true"></div>
+            <div class="hub" aria-hidden="true">
+              <svg viewBox="0 0 24 34" aria-hidden="true">
+                <path d="M9.4 1h5.2v3.6c0 1.1.4 2.1 1.1 2.9l1.3 1.5c.7.8 1 1.7 1 2.7V29a4 4 0 0 1-4 4h-6a4 4 0 0 1-4-4V11.7c0-1 .4-2 1-2.7l1.3-1.5c.7-.8 1.1-1.8 1.1-2.9V1Z" fill="currentColor"/>
+                <rect x="5.9" y="17.5" width="12.2" height="8" rx="1.4" fill="#FFF6EA" opacity="0.92"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="result" id="result" hidden>
+          <p class="result-kicker">Le tocó a</p>
+          <h2 class="result-name" id="resultName"></h2>
+          <article class="qcard animate-in" id="qcard">
+            <span class="qcard-tag" id="qcardLevel">Suave</span>
+            <p class="qcard-text" id="qcardText"></p>
+          </article>
+        </div>
+      </div>
+
+      <div class="dock" id="dockSpin">
+        <p class="dock-hint" id="spinHint">Que la botella decida.</p>
+        <button class="btn btn-primary btn-spin" id="spinBtn" type="button" aria-describedby="spinHint">Girar</button>
+      </div>
+
+      <div class="dock" id="dockResult" hidden>
+        <button class="btn btn-primary btn-xl" id="againBtn" type="button">Girar de nuevo</button>
+        <button class="btn btn-ghost" id="nextQBtn" type="button">Otra pregunta</button>
+      </div>
+
+      <p class="sr-only" id="spinStatus" role="status"></p>
+    </section>
+  </div>
+
+  <!-- ============ CÓMO SE JUEGA ============ -->
+  <dialog id="howDialog">
+    <h2 class="dialog-title">Cómo se juega</h2>
+    <ol class="steps">
+      <li><strong>Cargá los nombres.</strong> De 2 a 12 personas. Se guardan en este dispositivo para la próxima.</li>
+      <li><strong>Elegí la intensidad.</strong> Suave para arrancar, Media para soltarse y Picante solo para mayores de 18.</li>
+      <li><strong>Girá la botella.</strong> La rueda elige a quién le toca y saca una pregunta del mazo.</li>
+      <li><strong>Respondé en voz alta.</strong> Si no querés, pasá: nadie está obligado a contestar nada.</li>
+    </ol>
+    <p class="dialog-tip">Las preguntas no se repiten hasta que se termina el mazo de esa intensidad. Después se mezclan de nuevo. No hay puntos ni ganadores: es para hablar.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeHowBtn" type="button">Entendido</button>
+    </div>
+  </dialog>
+
+  <script src="assets/wheel.js"></script>
+  <script src="data/questions.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
