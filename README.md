@@ -1,22 +1,32 @@
 # Juegos de mesa
 
-Pequeños juegos vibecodeados para juntadas. Todos son sitios estáticos sin build: se abren con doble clic o se sirven desde la carpeta. **HDP** juega entre varios celulares sin servidor: el que crea la sala hace de mesa y el resto se conecta con un código.
+Pequeños juegos vibecodeados para juntadas. Todos son sitios estáticos sin build: se abren con doble clic, se sirven desde la carpeta o se juegan online. **HDP** juega entre varios celulares sin servidor: el que crea la sala hace de mesa y el resto se conecta con un código.
+
+**Están publicados en <https://juegos-de-mesa-seven.vercel.app>**
 
 ## Juegos
 
 | Juego | Para qué | Cómo se usa |
 | --- | --- | --- |
-| [En Palabras](en-palabras/) | Conversar de verdad, sin puntaje | Abrir `index.html` |
-| [HDP](hdp/public/) | Cartas para completar frases, con juez y puntaje (3 a 12 jugadores) | Abrís desde la grilla; alguien crea la sala y los demás entran con el código |
-| [La Botella](botella/) | Ruleta de nombres y preguntas por intensidad | Abrir `index.html` en el celular |
-| [Charadas](charadas/) | Mímica contra reloj | Abrir `index.html` en el celular |
-| [Yo Nunca](yo-nunca/) | Confesiones por niveles, con vidas | Abrir `index.html` |
-| [¿Quién es más probable?](mas-probable/) | Votación secreta pasando el celular | Abrir `index.html` |
-| [Después de las doce](despues-de-las-doce/) | Verdades, retos y deseos; de a dos o en grupo | Abrir `index.html` |
+| [En Palabras](en-palabras/) | Conversar de verdad, sin puntaje | Elegís un mazo y leés |
+| [HDP](hdp/public/) | Cartas para completar frases, con juez y puntaje (3 a 12 jugadores) | Alguien crea la sala y los demás entran con un código |
+| [La Botella](botella/) | Ruleta de nombres y preguntas por intensidad | Cargás los nombres y girás |
+| [Charadas](charadas/) | Mímica contra reloj | Celular en la frente, 60 segundos |
+| [Yo Nunca](yo-nunca/) | Confesiones por niveles, con vidas | 2 a 12, tocás tu nombre |
+| [¿Quién es más probable?](mas-probable/) | Votación secreta pasando el celular | De 3 a 12, voto secreto |
+| [Después de las doce](despues-de-las-doce/) | Verdades, retos y deseos; de a dos o en grupo | Tres intensidades, con reglas de la casa |
 
 ## Publicado
 
-El sitio vive en un proyecto privado de Vercel: cada juego queda en su carpeta y la raíz tiene un índice. Para publicar una versión nueva, `vercel deploy --prod` desde la raíz del repo.
+El sitio vive en **<https://juegos-de-mesa-seven.vercel.app>** y es público: no hace falta cuenta para jugar. El proyecto de Vercel está conectado al repo `snattydev/juegos-de-mesa`, así que **cada push a `main` despliega solo**. No hay que correr nada a mano.
+
+Para forzar un deploy sin commitear (o probar un cambio local antes de subirlo):
+
+```
+vercel deploy --prod
+```
+
+Cada juego queda en su carpeta y la raíz tiene el índice. El repo es público también, así que lo que se commitea se ve en GitHub.
 
 ## Convenciones
 
