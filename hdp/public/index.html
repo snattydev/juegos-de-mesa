@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0F0E0C">
-  <meta name="description" content="HDP: el juego de cartas para completar frases zarpadas. Hasta donde puedas, entre amigos, +18.">
+  <meta name="description" content="HDP: el juego de cartas para completar frases picantes. Hasta donde puedas, entre amigos.">
   <title>HDP — Hasta donde puedas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230F0E0C'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='48' fill='%23F3EDE4' text-anchor='middle'%3EHDP%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +25,7 @@
 
     <!-- INICIO -->
     <main class="view home" id="viewHome">
-      <p class="kicker">Juego de cartas +18</p>
+      <p class="kicker">Juego de cartas</p>
       <h1 class="wordmark">HDP</h1>
       <p class="tagline">Hasta donde puedas.</p>
       <p class="lead">Completá frases con las cartas más zarpadas. El juez elige la más graciosa y gana quien junta más puntos.</p>
@@ -37,12 +37,18 @@
       </form>
 
       <form class="home-form home-join" id="joinForm">
-        <label class="field-label" for="codeInput">¿Ya hay una sala?</label>
-        <div class="join-row">
-          <input class="input input-code" id="codeInput" name="code" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="CÓDIGO" aria-label="Código de sala de 4 letras">
-          <button class="btn btn-ghost" type="submit">Entrar</button>
-        </div>
+        <label class="field-label" for="codeInput">¿Te invitaron?</label>
+        <textarea class="input input-code" id="codeInput" name="code" rows="3" autocomplete="off" placeholder="Pegá acá la invitación que te pasó el host" aria-label="Código de invitación"></textarea>
+        <button class="btn btn-ghost" type="submit">Unirme</button>
       </form>
+
+      <section class="net-panel" id="guestPanel" hidden aria-live="polite">
+        <h3 class="panel-title">Pasale esto al host</h3>
+        <p class="hint">Copiá tu respuesta y mandásela. Cuando la pegue, entrás solo.</p>
+        <textarea class="input input-code" id="answerOut" rows="4" readonly aria-label="Tu respuesta para el host"></textarea>
+        <button class="btn btn-ghost" id="copyAnswerBtn" type="button">Copiar respuesta</button>
+        <p class="hint" id="guestStatus">Esperando al host…</p>
+      </section>
 
       <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
       <p class="home-note">Un celular o una compu hace de mesa; el resto entra desde su celular por la misma red WiFi.</p>
@@ -54,13 +60,25 @@
       <p class="kicker">Sala</p>
       <h2 class="view-title">Que entren todos</h2>
 
-      <div class="code-panel">
+      <div class="code-panel" hidden>
         <p class="code" id="lobbyCode" aria-label="Código de la sala">XXXX</p>
         <div class="code-actions">
           <button class="btn btn-ghost" id="copyBtn" type="button">Copiar</button>
           <button class="btn btn-ghost" id="shareBtn" type="button">Compartir</button>
         </div>
         <p class="code-hint">Entran por <span class="mono" id="lobbyUrl"></span> con ese código.</p>
+      </div>
+
+      <div class="net-panel" id="hostPanel" hidden>
+        <h3 class="panel-title">Sumar jugadores</h3>
+        <p class="hint">Generá una invitación y mandásela. Después pegá lo que te devuelva.</p>
+        <button class="btn btn-ghost" id="inviteBtn" type="button">Generar invitación</button>
+        <textarea class="input input-code" id="inviteOut" rows="3" readonly aria-label="Invitación para un jugador"></textarea>
+        <button class="btn btn-ghost" id="copyInviteBtn" type="button">Copiar invitación</button>
+        <label class="field-label" for="answerIn">Pegar respuesta del jugador</label>
+        <textarea class="input input-code" id="answerIn" rows="3" placeholder="Pegá acá la respuesta" aria-label="Respuesta del jugador"></textarea>
+        <button class="btn btn-primary" id="acceptBtn" type="button">Conectar jugador</button>
+        <p class="hint" id="netStatus" aria-live="polite"></p>
       </div>
 
       <div class="players-panel">
@@ -154,12 +172,16 @@
       <li><strong>El juez elige la que más le gusta</strong> sin saber de quién es. Quien la jugó suma un punto.</li>
       <li><strong>El juez va rotando</strong> y gana quien primero junta los puntos acordados.</li>
     </ol>
-    <p class="dialog-tip">Es un juego de juntada +18: humor zarpado, pero sin violencia explícita ni sexo gráfico. Si una carta no va para la mesa, se cambia y listo.</p>
+    <p class="dialog-tip">Es un juego de juntada: humor picante, pero sin violencia explícita ni sexo gráfico. Si una carta no va para la mesa, se cambia y listo.</p>
     <div class="dialog-actions">
       <button class="btn btn-primary btn-xl" id="closeHowBtn">Entendido</button>
     </div>
   </dialog>
 
+  <script src="assets/cards.js"></script>
+  <script src="assets/engine.js"></script>
+  <script src="assets/net.js"></script>
+  <script src="assets/local.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>

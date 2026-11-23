@@ -1,48 +1,48 @@
 # HDP — Hasta donde puedas
 
-Versión de mesa digital de HDP para juntadas: completás frases con cartas blancas y un juez elige la más graciosa. Se juega con el celular en la mano, todos conectados a la misma red WiFi.
+Versión de mesa digital de HDP para juntadas: completás frases con cartas blancas y un juez elige la más graciosa. Se juega con el celular en la mano.
 
-Es un juego +18: humor zarpado argentino, pero sin violencia explícita ni sexo gráfico.
+Es un juego de juntada: humor picante argentino, pero sin explicitud.
 
 ## Cómo se juega
 
-1. **Uno levanta el servidor** en la compu (o en cualquier máquina) con `node server.js`.
-2. **Entran todos desde el celular** a `http://IP-DE-LA-COMPU:3000`. La compu imprime la IP al arrancar.
-3. **Uno crea la sala**, el resto entra con el código de 4 letras. De 3 a 12 personas.
-4. **Cada ronda uno es el juez** y lee la frase en voz alta. Los demás eligen de su mano las cartas para completarla del modo más gracioso posible.
-5. **El juez elige la que más le gusta**, sin saber de quién es. Quien la jugó suma un punto.
-6. **El juez va rotando** y gana quien primero junta los puntos acordados (5 por defecto, configurable entre 3 y 10).
+1. **Uno crea la sala** desde su navegador, sin instalar nada. De 3 a 12 personas.
+2. **Invita al resto con un código de texto.** Por cada jugador genera una invitación, se la manda (WhatsApp, mail, lo que sea) y pega la respuesta que le devuelve. Con eso queda conectado.
+3. **Cada ronda uno es el juez** y lee la frase en voz alta. Los demás eligen de su mano las cartas para completarla del modo más gracioso posible.
+4. **El juez elige la que más le gusta**, sin saber de quién es. Quien la jugó suma un punto.
+5. **El juez va rotando** y gana quien primero junta los puntos acordados (5 por defecto, configurable entre 3 y 10).
 
-## Cómo levantarlo
+## Cómo conectarse
 
-Necesitás Node 22 (o más nuevo). No hay dependencias: solo la librería estándar.
+No hay servidor: el que crea la sala es el host y su navegador hace de mesa.
 
-```bash
-node server.js
-```
+1. Todos abren el juego por la misma WiFi (o desde donde estén, mientras los códigos se puedan pasar).
+2. El host toca **Crear sala** y después **Generar invitación**.
+3. Le pasa ese texto a un jugador. El jugador lo pega en **¿Te invitaron?**, pone su nombre y recibe un código de respuesta.
+4. El jugador le devuelve ese código al host, el host lo pega en **Pegar respuesta** y toca **Conectar jugador**.
 
-El servidor escucha en el puerto `3000` (cambiable con `PORT=3999 node server.js`) y, al arrancar, imprime:
+Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no depender de ningún servidor.
 
-```
-Local:  http://localhost:3000
-Red:    http://192.168.1.42:3000
-```
+## Cómo funciona
 
-**Para entrar desde el celular:** tiene que estar en la misma WiFi que la compu. Abrís el navegador y ponés la URL de la línea `Red:` (la IP de tu compu en la red). Si no aparece, mirá la IP con `ip addr` o `ipconfig` y probá esa.
+- **`public/assets/engine.js`**: el motor del juego (mazos, turnos, puntajes, validaciones). Corre en el navegador del host.
+- **`public/assets/net.js`**: WebRTC. Cada jugador tiene su propio data channel contra el host; el host difunde el estado.
+- **`public/assets/local.js`**: traduce las viejas llamadas `/api/...` a acciones del motor, así la interfaz no cambia.
+- **`public/assets/app.js`**: la interfaz de siempre.
+
+Funciona sobre `http://` en la red local: no usa cámara ni micrófono, solo data channels, que no piden contexto seguro.
 
 ## Decisiones del juego
 
 - **El juez nunca ve los autores hasta el final.** Las respuestas se mezclan y se etiquetan A, B, C… Recién en el resultado se muestra quién jugó cada una.
 - **El juez puede apurar.** Si alguien se colgó y no juega, el juez tiene "Ver respuestas" para seguir igual.
 - **Cartas que faltan, se reciclan.** Cuando se agota un mazo, se rebaraja el descarte solo.
-- **Se puede reconectar.** El código y el token se guardan en el navegador: si se corta, al volver seguís con tu mano y tu puntaje.
-- **Si se cae el host, no se corta la partida.** El rol pasa solo al siguiente jugador conectado.
-- **Sin cuentas ni métricas.** Todo vive en la memoria de la compu que levantó el server. Las salas inactivas se limpian solas a las 3 horas.
+- **El host es la mesa.** Si cierra la pestaña, se corta la partida: es el que tiene el estado y los canales.
+- **Sin cuentas ni métricas.** Nada sale de los navegadores: ni salas, ni puntajes, ni historial.
 - **74 cartas negras y 244 blancas**, escritas en rioplatense. Los textos de la interfaz también, cálidos y breves.
 
 ## El mazo
 
-- `data/cards.js`: las cartas. `BLACK` son las frases (con `pick` 1 o 2 para la cantidad de blancas) y `WHITE` las respuestas. Se puede agregar contenido ahí sin tocar el resto.
-- El servidor reparte, mezcla y valida; los clientes solo reciben lo que les toca.
+- `public/assets/cards.js`: las cartas. `BLACK` son las frases (con `pick` 1 o 2 para la cantidad de blancas) y `WHITE` las respuestas. Se puede agregar contenido ahí sin tocar el resto.
 
 La idea de fondo: reírse de todo un rato, sin que nadie termine ofendido en serio.

@@ -101,28 +101,14 @@
   }
 
   /* ---------- API ---------- */
+  // Todo pasa por el backend local: el host corre el motor en su navegador y
+  // los invitados hablan por data channel. La UI sigue usando /api/<accion>.
   function api(path, body) {
-    return fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body || {}),
-    }).then(function (res) {
-      return res.json().catch(function () { return null; }).then(function (data) {
-        if (!res.ok) {
-          var err = new Error((data && data.error) || "Algo salió mal");
-          err.status = res.status;
-          throw err;
-        }
-        return data;
-      });
-    });
+    return HDP_BACKEND.act(path, body || {});
   }
 
   function authed(path, body) {
-    var payload = body || {};
-    payload.code = session.code;
-    payload.token = session.token;
-    return api(path, payload);
+    return HDP_BACKEND.act(path, body || {});
   }
 
   /* ---------- Toast ---------- */
@@ -165,29 +151,14 @@
   }
 
   function connect() {
-    if (!session) return;
     stopPolling();
     if (es) { es.close(); es = null; }
     setConn("connecting");
-
-    var url = "/api/stream?code=" + encodeURIComponent(session.code) +
-      "&token=" + encodeURIComponent(session.token);
-    es = new EventSource(url);
-
-    es.addEventListener("state", function (e) {
-      try { applySnapshot(JSON.parse(e.data)); } catch (err) {}
+    HDP_BACKEND.subscribe(function (snap) {
+      if (!snap) return;
+      applySnapshot(snap);
       setConn("online");
     });
-
-    es.onopen = function () {
-      stopPolling();
-      setConn("online");
-    };
-
-    es.onerror = function () {
-      setConn("connecting");
-      startPolling();
-    };
   }
 
   /* ---------- Render ---------- */
@@ -468,20 +439,55 @@
     authed("/api/judge", { submissionId: submissionId }).catch(function (e) { toast(e.message, "error"); });
   }
 
-  function joinOrCreate(path, name, code) {
-    var body = { name: name };
-    if (code) body.code = code;
-    api(path, body)
+  /* ---------- Sala P2P ---------- */
+  function netEl(id) { return document.getElementById(id); }
+
+  function showNetPanel(kind, answer) {
+    var host = netEl("hostPanel");
+    var guest = netEl("guestPanel");
+    if (host) host.hidden = kind !== "host";
+    if (guest) guest.hidden = kind !== "guest";
+    if (kind === "guest" && guest) {
+      netEl("answerOut").value = answer || "";
+      netEl("guestStatus").textContent = "Esperando al host…";
+    }
+  }
+
+  function hideNetPanel() {
+    var guest = netEl("guestPanel");
+    if (guest) guest.hidden = true;
+  }
+
+  function startHost(name) {
+    HDP_BACKEND.reset();
+    HDP_BACKEND.create(name)
       .then(function (data) {
         session = { code: data.code, token: data.token };
         saveSession();
         el.nameInput.value = "";
-        el.codeInput.value = "";
-        return authed("/api/state");
-      })
-      .then(function (snap) {
-        applySnapshot(snap);
+        showNetPanel("host");
         connect();
+      })
+      .catch(function (e) { toast(e.message, "error"); });
+  }
+
+  function startGuest(invite, name) {
+    HDP_BACKEND.reset();
+    HDP_BACKEND.join(invite, name)
+      .then(function (res) {
+        el.nameInput.value = "";
+        el.codeInput.value = "";
+        showNetPanel("guest", res.answer);
+        HDP_BACKEND.subscribe(function (snap) {
+          if (!snap) return;
+          if (!session) {
+            session = { code: snap.code, token: HDP_BACKEND.token };
+            saveSession();
+          }
+          applySnapshot(snap);
+          setConn("online");
+          hideNetPanel();
+        });
       })
       .catch(function (e) { toast(e.message, "error"); });
   }
@@ -496,6 +502,8 @@
   function goHome() {
     if (es) { es.close(); es = null; }
     stopPolling();
+    hideNetPanel();
+    if (window.HDP_BACKEND) HDP_BACKEND.reset();
     clearSession();
     snapshot = null;
     selected = [];
@@ -550,16 +558,68 @@
     e.preventDefault();
     var name = el.nameInput.value.trim();
     if (!name) { toast("Poné tu nombre", "error"); return; }
-    joinOrCreate("/api/create", name, null);
+    startHost(name);
   });
 
   el.joinForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var name = el.nameInput.value.trim();
-    var code = el.codeInput.value.trim().toUpperCase();
+    var invite = el.codeInput.value.trim();
     if (!name) { toast("Poné tu nombre", "error"); return; }
-    if (!code) { toast("Poné el código de la sala", "error"); return; }
-    joinOrCreate("/api/join", name, code);
+    if (!invite) { toast("Pegá la invitación", "error"); return; }
+    startGuest(invite, name);
+  });
+
+  function copyText(text, okMsg) {
+    if (!text) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(
+        function () { toast(okMsg, "ok"); },
+        function () { fallbackCopy(text, function () { toast(okMsg, "ok"); }, function () { toast("No se pudo copiar", "error"); }); }
+      );
+    } else {
+      fallbackCopy(text, function () { toast(okMsg, "ok"); }, function () { toast("No se pudo copiar", "error"); });
+    }
+  }
+
+  var inviteBtn = netEl("inviteBtn");
+  if (inviteBtn) inviteBtn.addEventListener("click", function () {
+    inviteBtn.disabled = true;
+    HDP_BACKEND.invite()
+      .then(function (res) {
+        netEl("inviteOut").value = res ? res.code : "";
+        netEl("answerIn").value = "";
+        netEl("netStatus").textContent = "Invitación lista: copiala y mandásela a alguien.";
+      })
+      .catch(function (e) { toast(e.message, "error"); })
+      .then(function () { inviteBtn.disabled = false; });
+  });
+
+  var acceptBtn = netEl("acceptBtn");
+  if (acceptBtn) acceptBtn.addEventListener("click", function () {
+    var code = netEl("answerIn").value.trim();
+    if (!code) { toast("Pegá la respuesta", "error"); return; }
+    HDP_BACKEND.acceptAnswer(code).then(function (res) {
+      if (res && res.error) {
+        netEl("netStatus").textContent = res.error;
+        toast(res.error, "error");
+        return;
+      }
+      netEl("answerIn").value = "";
+      netEl("inviteOut").value = "";
+      netEl("netStatus").textContent = "Jugador conectado.";
+      toast("Jugador conectado", "ok");
+    });
+  });
+
+  var copyInviteBtn = netEl("copyInviteBtn");
+  if (copyInviteBtn) copyInviteBtn.addEventListener("click", function () {
+    copyText(netEl("inviteOut").value, "Invitación copiada");
+  });
+
+  var copyAnswerBtn = netEl("copyAnswerBtn");
+  if (copyAnswerBtn) copyAnswerBtn.addEventListener("click", function () {
+    copyText(netEl("answerOut").value, "Respuesta copiada");
   });
 
   el.startBtn.addEventListener("click", function () {

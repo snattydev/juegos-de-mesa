@@ -2,7 +2,7 @@
 
 // Mazo de HDP. Las cartas negras usan ___ para cada espacio en blanco;
 // `pick` indica cuántas cartas blancas hay que jugar.
-module.exports = {
+const HDP_DATA = {
   BLACK: [
     { text: "Cuando llega la cuenta del restaurante, siempre aparece ___.", pick: 1 },
     { text: "El nuevo plan del Gobierno para bajar la inflación: ___.", pick: 1 },
@@ -327,3 +327,7 @@ module.exports = {
     "La combo de helado que se derrite antes de llegar"
   ]
 };
+
+// Mismo archivo para Node (server, tests) y para el navegador (host P2P).
+if (typeof module === "object" && module.exports) module.exports = HDP_DATA;
+if (typeof window !== "undefined") window.HDP_CARDS = HDP_DATA;
