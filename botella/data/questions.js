@@ -109,7 +109,7 @@ window.BOTELLA_DECKS = {
 
   picante: {
     label: "Picante",
-    hint: "Para mayores de 18. Subido de tono, sin ser explícito.",
+    hint: "Subido de tono, sin ser explícito.",
     color: "#93301F",
     questions: [
       "¿Cuál fue tu peor salida romántica?",

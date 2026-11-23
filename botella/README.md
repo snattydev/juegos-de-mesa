@@ -7,7 +7,7 @@ Sitio estático. Se abre `index.html` con doble clic o se sirve la carpeta. No h
 ## Cómo se juega
 
 1. **Cargá los nombres.** De 2 a 12 personas. Quedan guardados en el dispositivo (localStorage) para la próxima.
-2. **Elegí la intensidad.** Suave (conocer al otro), Media (gustos, costumbres y algo de vergüenza) o Picante (mayores de 18).
+2. **Elegí la intensidad.** Suave (conocer al otro), Media (gustos, costumbres y algo de vergüenza) o Picante (para cuando ya hay confianza).
 3. **Girá.** La rueda da varias vueltas y frena justo en un sector. Vibra en el celular si el navegador lo permite.
 4. **Respondé en voz alta.** Después podés pedir otra pregunta o girar de nuevo. Cada mazo tiene 45 preguntas y no se repiten hasta agotarlo.
 

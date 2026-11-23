@@ -4,7 +4,7 @@
 // Cada nivel tiene 120 frases únicas y completas: no hay placeholders.
 // Los temas están separados a propósito: cada bloque de 10 frases evita
 // repetir el tema de los otros niveles.
-// Picante es +18: insinuación y humor, nunca explicitud ni violencia.
+// Picante sube el tono: insinuación y humor, nunca explicitud ni violencia.
 
 window.YO_NUNCA_DATA = {
   suave: [

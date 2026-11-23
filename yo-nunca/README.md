@@ -4,13 +4,13 @@ Juego de confesiones para juntadas. Un solo celular en la mesa: se lee una frase
 
 ## Cómo se juega
 
-1. Sumá de 2 a 12 jugadores y elegí la intensidad: **Suave**, **Media** o **Picante** (+18).
+1. Sumá de 2 a 12 jugadores y elegí la intensidad: **Suave**, **Media** o **Picante** (sin vueltas).
 2. Elegí cuántas vidas arranca cada uno. Por defecto son 3.
 3. Lean la frase de la tarjeta en voz alta. Quien la hizo toca su nombre en la lista y pierde una vida.
 4. Si no querés admitirlo, no toques nada. **Pasar también es jugar**: nadie está obligado a confesar.
 5. Cuando a alguien se le terminan las vidas queda como espectador. La partida termina cuando queda una sola persona con vidas o cuando se acaban las 120 frases.
 
-No hay puntos ni ganador moral: solo se trata de sobrevivir. El contenido picante es para mayores de 18.
+No hay puntos ni ganador moral: solo se trata de sobrevivir. El nivel picante sube el tono, sin explicitud.
 
 ## Cómo abrirlo
 

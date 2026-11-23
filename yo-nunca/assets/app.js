@@ -11,7 +11,7 @@
   const LEVEL_META = {
     suave: { label: "Suave", note: "Para entrar en calor" },
     media: { label: "Media", note: "Para picantear" },
-    picante: { label: "Picante", note: "+18 · Sin vueltas" }
+    picante: { label: "Picante", note: "Sin vueltas" }
   };
 
   const MIN_PLAYERS = 2;
@@ -476,7 +476,7 @@
 
   function paintCard() {
     const meta = LEVEL_META[state.intensity];
-    cardLevel.textContent = state.intensity === "picante" ? meta.label + " · +18" : meta.label;
+    cardLevel.textContent = meta.label;
     cardLevel.classList.toggle("is-hot", state.intensity === "picante");
     cardPhrase.textContent = state.card;
     cardCount.textContent = "Frase " + state.run.drawn + " de " + state.run.total;
