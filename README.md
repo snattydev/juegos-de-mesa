@@ -14,6 +14,10 @@ Pequeños juegos vibecodeados para juntadas. Todos son sitios estáticos sin bui
 | [¿Quién es más probable?](mas-probable/) | Votación secreta pasando el celular | Abrir `index.html` |
 | [Después de las doce](despues-de-las-doce/) | Verdades, retos y deseos; de a dos o en grupo | Abrir `index.html` |
 
+## Publicado
+
+El sitio vive en un proyecto privado de Vercel: cada juego queda en su carpeta y la raíz tiene un índice. HDP no viaja, porque necesita su servidor. Para publicar una versión nueva, `vercel deploy --prod` desde la raíz del repo.
+
 ## Convenciones
 
 Cada juego vive en su carpeta y es independiente: `index.html`, `assets/app.js`, `assets/styles.css`, `data/*.js`, más `README.md` con sus propias decisiones. Sin dependencias, sin build, sin cuentas, sin métricas. Los textos de interfaz van en español rioplatense.
