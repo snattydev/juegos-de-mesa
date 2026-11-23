@@ -190,43 +190,6 @@ input { font-family: inherit; color: inherit; }
 .rules-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .rules-fab svg { width: 20px; height: 20px; display: block; }
 
-/* ---------- Age gate ---------- */
-
-.age {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  gap: 0;
-  padding-block: 4vh 2vh;
-}
-
-.age-box {
-  width: 100%;
-  max-width: 340px;
-  margin-top: 34px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: rgba(30, 20, 24, 0.6);
-}
-
-.age-warning {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.age-warning-strong {
-  color: var(--ink);
-  font-weight: 500;
-}
-
-.age-box .btn-primary { margin-top: 12px; }
-
 /* ---------- Setup ---------- */
 
 .setup { overflow-y: auto; }
@@ -776,8 +739,6 @@ dialog::backdrop {
 /* ---------- Small screens ---------- */
 
 @media (max-height: 640px) {
-  .age { justify-content: flex-start; padding-top: 3vh; }
-  .age-box { margin-top: 20px; }
   .setup-section { margin-top: 16px; }
   .card { min-height: 270px; }
   .card-text { font-size: clamp(1.3rem, 5vw, 1.9rem); }
