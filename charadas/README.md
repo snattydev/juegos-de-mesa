@@ -1,6 +1,6 @@
 # Charadas
 
-Mímica contra reloj para jugar en grupo con un solo celular. El que actúa se apoya el teléfono en la frente con la pantalla hacia afuera: el grupo ve la palabra, da pistas y toca **Alcancé** o **Paso**. Sin puntos en contra, sin explicaciones largas.
+Mímica contra reloj para jugar en grupo con un solo celular. El que adivina se apoya el teléfono en la frente con la pantalla hacia afuera: el grupo ve la palabra, hace mímica y toca **Alcancé** o **Paso**. Sin puntos en contra, sin explicaciones largas.
 
 Sitio estático: se abre `index.html` con doble clic o se sirve la carpeta. No hay build, dependencias ni cuentas.
 
@@ -8,7 +8,7 @@ Sitio estático: se abre `index.html` con doble clic o se sirve la carpeta. No h
 
 1. Elegís categoría y duración (60, 90 o 120 segundos).
 2. Cuenta regresiva de 3 a 1 y arranca el reloj.
-3. El grupo hace mímica. **Alcancé** suma uno; **Paso** no resta.
+3. El grupo hace mímica y el que tiene el celular adivina. **Alcancé** suma uno; **Paso** no resta.
 4. Al terminar el tiempo ves la lista de acertadas y salteadas, el total y la mejor marca de esa categoría.
 
 Los récords se guardan por categoría en `localStorage`, junto con la última categoría y duración usadas.
