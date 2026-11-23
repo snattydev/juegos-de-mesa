@@ -34,14 +34,11 @@ let groupNames = [];
 
 const $ = (id) => document.getElementById(id);
 
-const viewAge = $("viewAge");
 const viewSetup = $("viewSetup");
 const viewGame = $("viewGame");
 const viewEnd = $("viewEnd");
 
 const rulesFab = $("rulesFab");
-const enterBtn = $("enterBtn");
-const leaveBtn = $("leaveBtn");
 const setupBackBtn = $("setupBackBtn");
 const howBtn = $("howBtn");
 const startBtn = $("startBtn");
@@ -99,7 +96,7 @@ function shuffle(items) {
 }
 
 function show(view) {
-  [viewAge, viewSetup, viewGame, viewEnd].forEach((v) => {
+  [viewSetup, viewGame, viewEnd].forEach((v) => {
     v.hidden = v !== view;
   });
 }
@@ -391,19 +388,9 @@ function showEnd() {
 
 // ─────────────────────────────── navigation ───────────────────────────────
 
-enterBtn.addEventListener("click", () => {
-  show(viewSetup);
-});
-
 startBtn.addEventListener("click", startGame);
 
-leaveBtn.addEventListener("click", () => {
-  const box = document.querySelector(".age-box");
-  box.innerHTML = '<p class="age-warning age-warning-strong">Está bien. Esta noche no. Volvé cuando quieras.</p>';
-  box.style.textAlign = "center";
-});
-
-setupBackBtn.addEventListener("click", () => show(viewAge));
+setupBackBtn.addEventListener("click", () => { document.getElementById("hubFab").click(); });
 gameBackBtn.addEventListener("click", () => show(viewSetup));
 settingsBtn.addEventListener("click", () => show(viewSetup));
 againBtn.addEventListener("click", startGame);
@@ -440,6 +427,7 @@ closePickBtn.addEventListener("click", () => closeDialog(pickDialog));
 
 // ─────────────────────────────── init ───────────────────────────────
 
+show(viewSetup);
 loadGroupNames();
 renderNameChips();
 intensityHint.textContent = DATA.intensities[state.intensity].tagline + ".";

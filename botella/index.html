@@ -170,7 +170,7 @@
     <h2 class="dialog-title">Cómo se juega</h2>
     <ol class="steps">
       <li><strong>Cargá los nombres.</strong> De 2 a 12 personas. Se guardan en este dispositivo para la próxima.</li>
-      <li><strong>Elegí la intensidad.</strong> Suave para arrancar, Media para soltarse y Picante solo para mayores de 18.</li>
+      <li><strong>Elegí la intensidad.</strong> Suave para arrancar, Media para soltarse y Picante para cuando ya hay confianza.</li>
       <li><strong>Girá la botella.</strong> La rueda elige a quién le toca y saca una pregunta del mazo.</li>
       <li><strong>Respondé en voz alta.</strong> Si no querés, pasá: nadie está obligado a contestar nada.</li>
     </ol>
@@ -183,5 +183,86 @@
   <script src="assets/wheel.js"></script>
   <script src="data/questions.js"></script>
   <script src="assets/app.js"></script>
+<!-- Volver al selector de juegos -->
+<style id="hub-nav-style">
+  .hub-fab {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(58px, calc(env(safe-area-inset-right) + 58px));
+    z-index: 11;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    border: none; border-radius: 50%;
+    background: transparent; color: var(--muted, #6B6259);
+    opacity: 0.5; cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body:not(:has(.theme-toggle)) .hub-fab { right: max(14px, env(safe-area-inset-right)); }
+  .hub-fab:hover { opacity: 0.85; }
+  .hub-fab:active { transform: scale(0.94); }
+  .hub-fab:focus-visible { outline: 2px solid var(--accent, #8C3A2A); outline-offset: 2px; opacity: 0.9; }
+  .hub-fab svg { width: 18px; height: 18px; }
+
+  dialog.hub-dialog {
+    width: min(380px, calc(100vw - 36px));
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--line-strong, rgba(27, 25, 23, 0.2));
+    background: var(--surface, #FFFDF9);
+    color: var(--ink, #1B1917);
+    font-family: inherit;
+  }
+  dialog.hub-dialog::backdrop { background: rgba(10, 9, 8, 0.55); }
+  dialog.hub-dialog h2 { margin: 0 0 8px; font-size: 1.15rem; letter-spacing: -0.01em; }
+  dialog.hub-dialog p { margin: 0 0 16px; font-size: 0.88rem; line-height: 1.5; color: var(--muted, #6B6259); }
+  .hub-actions { display: grid; gap: 8px; }
+  .hub-btn {
+    min-height: 44px; border-radius: 12px;
+    border: 1px solid var(--line-strong, rgba(27, 25, 23, 0.2));
+    background: transparent; color: inherit;
+    font: inherit; font-size: 0.92rem; cursor: pointer;
+  }
+  .hub-btn:focus-visible { outline: 2px solid var(--accent, #8C3A2A); outline-offset: 2px; }
+  .hub-btn-primary { background: var(--ink, #1B1917); color: var(--bg, #F6F1E9); border-color: var(--ink, #1B1917); }
+  @media (prefers-reduced-motion: reduce) { .hub-fab { transition: none; } }
+</style>
+
+<button class="hub-fab" id="hubFab" type="button" aria-label="Volver a los juegos" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/>
+    <rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/>
+  </svg>
+</button>
+
+<dialog class="hub-dialog" id="hubDialog" aria-labelledby="hubTitle">
+  <h2 id="hubTitle">¿Volver a los juegos?</h2>
+  <p>Volvés al selector. Si hay una partida en curso, se pierde.</p>
+  <div class="hub-actions">
+    <button class="hub-btn hub-btn-primary" id="hubStay" type="button">Seguir acá</button>
+    <button class="hub-btn" id="hubGo" type="button">Volver a los juegos</button>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var fab = document.getElementById("hubFab");
+    var dialog = document.getElementById("hubDialog");
+    var stay = document.getElementById("hubStay");
+    var go = document.getElementById("hubGo");
+    if (!fab || !dialog) return;
+    fab.addEventListener("click", function () {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+        stay.focus();
+      } else if (window.confirm("¿Volver a los juegos? Si hay una partida en curso, se pierde.")) {
+        window.location.href = "../";
+      }
+    });
+    stay.addEventListener("click", function () { dialog.close(); });
+    go.addEventListener("click", function () { window.location.href = "../"; });
+  })();
+</script>
+
 </body>
 </html>
