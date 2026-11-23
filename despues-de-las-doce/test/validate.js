@@ -118,6 +118,22 @@ INTENSITIES.forEach((intensity) => {
   );
 });
 
+// 8. Ninguna carta elegible en pareja puede pedir una dinámica de grupo.
+//    Mismo criterio que la carta final, ahora para todo el mazo: "elegí a
+//    alguien", "la persona que elijas", "preguntale a alguien", "alguien de
+//    acá" o "a quien más te atrae" necesitan tres personas o más.
+const groupMechanics =
+  /eleg[ií] a alguien|persona que elijas|preguntale a alguien|alguien de ac[áa]|a qui[eé]n m[áa]s te atrae|alguien del grupo/i;
+
+["solo", "ambos"].forEach((audience) => {
+  const leaked = cards.filter((c) => c.audience === audience && groupMechanics.test(c.text));
+  check(
+    "cartas " + audience + " sin dinámica de grupo",
+    leaked.length === 0,
+    leaked.map((c) => c.text).join(" | ")
+  );
+});
+
 console.log("\n" + checks + " chequeos, " + failures + " fallas.");
 
 if (failures > 0) {

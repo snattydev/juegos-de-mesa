@@ -90,10 +90,10 @@
     // Reto · ambos
     ["previa", "reto", "ambos", "Contá cuál fue tu último sueño con alguien que te guste."],
     ["previa", "reto", "ambos", "Hacé un brindis improvisado por la noche y los presentes."],
-    ["previa", "reto", "ambos", "Elegí a alguien y decile lo primero que pensaste cuando lo conociste."],
+    ["previa", "reto", "grupo", "Elegí a alguien y decile lo primero que pensaste cuando lo conociste."],
     ["previa", "reto", "ambos", "Decile un cumplido a cada persona presente, una por una."],
     ["previa", "reto", "ambos", "Contá una anécdota de chamuyo en la que hayas quedado en evidencia."],
-    ["previa", "reto", "ambos", "Elegí a alguien y hacé que se sonroje con una sola frase."],
+    ["previa", "reto", "grupo", "Elegí a alguien y hacé que se sonroje con una sola frase."],
     ["previa", "reto", "ambos", "Mostrá con mímica cómo te ponés cuando alguien te gusta."],
     ["previa", "reto", "ambos", "Decí en voz alta tu mayor cualidad para seducir."],
 
@@ -119,13 +119,13 @@
 
     // Deseo · ambos
     ["previa", "deseo", "ambos", "¿Qué pregunta íntima te gustaría que alguien te haga acá?"],
-    ["previa", "deseo", "ambos", "Pedile a la persona que elijas que te cuente qué es lo que más le atrae de alguien."],
+    ["previa", "deseo", "grupo", "Pedile a la persona que elijas que te cuente qué es lo que más le atrae de alguien."],
     ["previa", "deseo", "ambos", "¿Qué te gustaría que te susurren al oído en este momento?"],
-    ["previa", "deseo", "ambos", "Preguntale a alguien qué es lo más lindo que le dijeron alguna vez."],
+    ["previa", "deseo", "grupo", "Preguntale a alguien qué es lo más lindo que le dijeron alguna vez."],
     ["previa", "deseo", "ambos", "¿Qué deseo simple te gustaría cumplir antes de que termine la noche?"],
-    ["previa", "deseo", "ambos", "Pedile a la persona que elijas que te regale un piropo inventado."],
+    ["previa", "deseo", "grupo", "Pedile a la persona que elijas que te regale un piropo inventado."],
     ["previa", "deseo", "ambos", "¿Qué gesto te hace sentir deseado o deseada?"],
-    ["previa", "deseo", "ambos", "Preguntale a alguien qué canción le gustaría bailar con vos."],
+    ["previa", "deseo", "grupo", "Preguntale a alguien qué canción le gustaría bailar con vos."],
 
     // ─────────────────────────────── CALIENTE ───────────────────────────────
     // Verdad · solo
@@ -179,12 +179,12 @@
     ["caliente", "reto", "grupo", "Elegí a alguien y decile al oído algo que lo haga sonreír."],
 
     // Reto · ambos
-    ["caliente", "reto", "ambos", "Dale un beso en el cuello a la persona que elijas, con su permiso."],
+    ["caliente", "reto", "grupo", "Dale un beso en el cuello a la persona que elijas, con su permiso."],
     ["caliente", "reto", "ambos", "Sentate al lado de alguien y apoyá tu pierna contra la suya."],
     ["caliente", "reto", "ambos", "Susurrale a la persona de al lado lo que harías si estuvieran solos."],
-    ["caliente", "reto", "ambos", "Hacé que la persona que elijas se ría solo con la mirada."],
+    ["caliente", "reto", "grupo", "Hacé que la persona que elijas se ría solo con la mirada."],
     ["caliente", "reto", "ambos", "Dale la mano a alguien y acariciale la palma lentamente."],
-    ["caliente", "reto", "ambos", "Elegí a alguien y decile cuál es su mayor tentación."],
+    ["caliente", "reto", "grupo", "Elegí a alguien y decile cuál es su mayor tentación."],
     ["caliente", "reto", "ambos", "Contá tu fantasía más repetida, sin detalles gráficos."],
     ["caliente", "reto", "ambos", "Dejá que la persona de al lado te haga una caricia en el brazo."],
 
@@ -210,7 +210,7 @@
 
     // Deseo · ambos
     ["caliente", "deseo", "ambos", "¿Qué te gustaría que te hagan en este momento, con tu permiso?"],
-    ["caliente", "deseo", "ambos", "Pedile a la persona que elijas que te bese la mano."],
+    ["caliente", "deseo", "grupo", "Pedile a la persona que elijas que te bese la mano."],
     ["caliente", "deseo", "ambos", "¿Qué pregunta caliente te gustaría que te hagan?"],
     ["caliente", "deseo", "ambos", "Pedile a alguien que te cuente qué es lo que más le atrae de vos."],
     ["caliente", "deseo", "ambos", "¿Qué caricia te gustaría recibir ahora mismo?"],
@@ -245,7 +245,7 @@
     ["sin-filtro", "verdad", "ambos", "¿Cuál es tu mayor fantasía compartida con alguien presente?"],
     ["sin-filtro", "verdad", "ambos", "¿Qué te gustaría animarte a probar esta noche?"],
     ["sin-filtro", "verdad", "ambos", "¿Dónde te gustaría que te besen para perder el control?"],
-    ["sin-filtro", "verdad", "ambos", "¿Qué te gustaría hacerle a alguien de acá si se diera la ocasión?"],
+    ["sin-filtro", "verdad", "grupo", "¿Qué te gustaría hacerle a alguien de acá si se diera la ocasión?"],
     ["sin-filtro", "verdad", "ambos", "¿Cuál fue el pensamiento más caliente que tuviste hoy?"],
     ["sin-filtro", "verdad", "ambos", "¿Qué secreto te gustaría confesarle a la persona de al lado?"],
 
@@ -270,14 +270,14 @@
     ["sin-filtro", "reto", "grupo", "Elegí a alguien y quedate mirándolo fijo sin reírte."],
 
     // Reto · ambos
-    ["sin-filtro", "reto", "ambos", "Dale un beso debajo de la oreja a la persona que elijas, con su permiso."],
+    ["sin-filtro", "reto", "grupo", "Dale un beso debajo de la oreja a la persona que elijas, con su permiso."],
     ["sin-filtro", "reto", "ambos", "Sentate en las piernas de alguien por una carta entera."],
     ["sin-filtro", "reto", "ambos", "Susurrale a la persona de al lado tu fantasía más atrevida."],
-    ["sin-filtro", "reto", "ambos", "Acariciá la espalda de la persona que elijas por diez segundos."],
-    ["sin-filtro", "reto", "ambos", "Elegí a alguien y mordé suavemente su hombro, si se deja."],
+    ["sin-filtro", "reto", "grupo", "Acariciá la espalda de la persona que elijas por diez segundos."],
+    ["sin-filtro", "reto", "grupo", "Elegí a alguien y mordé suavemente su hombro, si se deja."],
     ["sin-filtro", "reto", "ambos", "Decile a la persona de al lado qué es lo que más te gustaría que te haga."],
-    ["sin-filtro", "reto", "ambos", "Hacé un brindis por el deseo, mirando a quien más te atrae."],
-    ["sin-filtro", "reto", "ambos", "Dejá que la persona que elijas te bese donde quiera, con tu permiso."],
+    ["sin-filtro", "reto", "grupo", "Hacé un brindis por el deseo, mirando a quien más te atrae."],
+    ["sin-filtro", "reto", "grupo", "Dejá que la persona que elijas te bese donde quiera, con tu permiso."],
 
     // Deseo · solo
     ["sin-filtro", "deseo", "solo", "Pedile a la otra persona que te cuente su fantasía más íntima."],
@@ -301,7 +301,7 @@
 
     // Deseo · ambos
     ["sin-filtro", "deseo", "ambos", "¿Qué deseo te gustaría cumplir antes de que amanezca?"],
-    ["sin-filtro", "deseo", "ambos", "Pedile a la persona que elijas que te bese donde más ganas tenga."],
+    ["sin-filtro", "deseo", "grupo", "Pedile a la persona que elijas que te bese donde más ganas tenga."],
     ["sin-filtro", "deseo", "ambos", "¿Qué te gustaría que te susurren para perder la cabeza?"],
     ["sin-filtro", "deseo", "ambos", "Pedile a alguien que te cuente lo más atrevido que haría con vos."],
     ["sin-filtro", "deseo", "ambos", "¿Qué te gustaría probar esta noche que nunca probaste?"],
