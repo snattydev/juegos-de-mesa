@@ -15,7 +15,7 @@ Los récords se guardan por categoría en `localStorage`, junto con la última c
 
 ### Sensor de inclinación (opcional)
 
-En celulares compatibles aparece el interruptor **Inclinar para pasar**: inclinar el teléfono hacia abajo pasa la palabra. En iOS pide permiso explícito con `DeviceOrientationEvent.requestPermission()`.
+En celulares compatibles aparece el interruptor **Inclinar para pasar**: el que lleva el celular lo inclina hacia abajo y pasa la palabra. En iOS pide permiso explícito con `DeviceOrientationEvent.requestPermission()`.
 
 Si el dispositivo no manda datos, el sensor se apaga solo. **Los botones nunca se desactivan**: el juego no depende del sensor.
 

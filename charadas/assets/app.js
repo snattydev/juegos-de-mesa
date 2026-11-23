@@ -650,7 +650,7 @@
           disableSensor("Este dispositivo no manda datos del sensor. Jugá con los botones.");
           return;
         }
-        showSensorNote("Listo: incliná el celular hacia abajo para pasar.");
+        showSensorNote("Listo: el que lleva el celular lo inclina hacia abajo para pasar.");
       }, 1500);
     } catch (e) {
       disableSensor("No pudimos activar el sensor. Jugá con los botones.");
