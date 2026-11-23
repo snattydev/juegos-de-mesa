@@ -371,8 +371,9 @@
     stageCat.textContent = labelOf(item.category);
     stage.style.setProperty("--cat", colorOf(item.category));
 
-    sensor.baseline = null;
-    sensor.locked = false;
+    // El sensor NO se reancla acá: la referencia es la postura neutra de la
+    // ronda. Si se reseteara, volver al centro después de un gesto contaría
+    // como el gesto contrario.
 
     wordEl.classList.remove("is-in");
     void wordEl.offsetWidth;
@@ -650,7 +651,7 @@
           disableSensor("Este dispositivo no manda datos del sensor. Jugá con los botones.");
           return;
         }
-        showSensorNote("Listo: el que lleva el celular lo inclina hacia abajo para pasar.");
+        showSensorNote("Listo: arriba suma acierto, abajo pasa la palabra.");
       }, 1500);
     } catch (e) {
       disableSensor("No pudimos activar el sensor. Jugá con los botones.");
@@ -683,16 +684,28 @@
     }
 
     const direction = sensor.baseline >= 0 ? 1 : -1;
-    const delta = (event.beta - sensor.baseline) * direction;
+    let drift = event.beta - sensor.baseline;
+    if (drift > 180) drift -= 360;
+    else if (drift < -180) drift += 360;
+    const delta = drift * direction;
 
-    if (delta > TILT_THRESHOLD && !sensor.locked) {
-      sensor.locked = true;
-      markPass();
+    if (Math.abs(delta) < TILT_RELEASE) {
+      sensor.locked = false;
       return;
     }
 
-    if (delta < TILT_RELEASE) {
-      sensor.locked = false;
+    if (sensor.locked) return;
+
+    // Inclinar hacia arriba (mentón arriba) = la sacó; hacia abajo = paso.
+    if (delta < -TILT_THRESHOLD) {
+      sensor.locked = true;
+      markHit();
+      return;
+    }
+
+    if (delta > TILT_THRESHOLD) {
+      sensor.locked = true;
+      markPass();
     }
   }
 

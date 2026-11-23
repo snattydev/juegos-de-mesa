@@ -15,9 +15,11 @@ Los récords se guardan por categoría en `localStorage`, junto con la última c
 
 ### Sensor de inclinación (opcional)
 
-En celulares compatibles aparece el interruptor **Inclinar para pasar**: el que lleva el celular lo inclina hacia abajo y pasa la palabra. En iOS pide permiso explícito con `DeviceOrientationEvent.requestPermission()`.
+En celulares compatibles aparece el interruptor **Inclinar el celular**: el que lleva el celular lo inclina hacia arriba para sumar un acierto y hacia abajo para pasar de palabra. En iOS pide permiso explícito con `DeviceOrientationEvent.requestPermission()`.
 
 Si el dispositivo no manda datos, el sensor se apaga solo. **Los botones nunca se desactivan**: el juego no depende del sensor.
+
+La referencia es la postura neutra al arrancar la ronda: 42° de inclinación disparan el gesto y hay que volver a ±12° para habilitar el siguiente. El gesto se dispara una sola vez hasta volver al centro, y `nextWord()` no reancla el sensor — si lo hiciera, volver al centro después de un gesto contaría como el gesto contrario.
 
 ## Contenido
 
