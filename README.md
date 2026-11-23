@@ -1,6 +1,6 @@
 # Juegos de mesa
 
-Siete juegos para juntadas, hechos para jugar desde el celular. Todos son sitios estáticos sin build: se abren con doble clic, se sirven desde la carpeta o se juegan online.
+Ocho juegos para juntadas, hechos para jugar desde el celular. Todos son sitios estáticos sin build: se abren con doble clic, se sirven desde la carpeta o se juegan online.
 
 **Están publicados en <https://juegos-de-mesa-seven.vercel.app>**
 
@@ -12,6 +12,7 @@ Siete juegos para juntadas, hechos para jugar desde el celular. Todos son sitios
 | [HDP](hdp/public/) | Cartas para completar frases, con juez y puntaje | De 3 a 12: alguien crea la sala y el resto entra con un código |
 | [La Botella](botella/) | Ruleta de nombres y preguntas por intensidad | De 2 a 12: cargás los nombres y girás |
 | [Charadas](charadas/) | Mímica contra reloj | Celular en la frente del que adivina; el grupo actúa. 60, 90 o 120 segundos |
+| [Ahorcado](ahorcado/) | Palabra oculta y seis errores | Un celular para toda la mesa: eligen letras y adivinan juntos |
 | [Yo Nunca](yo-nunca/) | Confesiones por niveles, con vidas | De 2 a 12: tocás tu nombre y perdés una vida |
 | [¿Quién es más probable?](mas-probable/) | Votación secreta pasando el celular | De 3 a 12: cada uno vota en secreto |
 | [Después de las doce](despues-de-las-doce/) | Verdades, retos y deseos | De a dos o en grupo, con tres intensidades |

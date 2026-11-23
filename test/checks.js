@@ -44,6 +44,7 @@ const JUEGOS = [
   { slug: "en-palabras", indice: "en-palabras/" },
   { slug: "botella", indice: "botella/" },
   { slug: "charadas", indice: "charadas/" },
+  { slug: "ahorcado", indice: "ahorcado/" },
   { slug: "yo-nunca", indice: "yo-nunca/" },
   { slug: "mas-probable", indice: "mas-probable/" },
   { slug: "despues-de-las-doce", indice: "despues-de-las-doce/" },
@@ -170,6 +171,21 @@ function conDatosGlobal(archivo, nombreGlobal) {
   ok(d.items.length === 480, "charadas: 480 items", `encontré ${d.items.length}`);
   const readme = leer(path.join(ROOT, "charadas", "README.md"));
   ok(/480/.test(readme), "charadas/README dice 480", primeraFrase(readme, "480"));
+}
+
+// ahorcado: cuatro mazos de 40 + mezcla
+{
+  const d = conDatosGlobal(path.join(ROOT, "ahorcado", "data", "words.js"), "AHORCADO_DATA");
+  const reales = d.categories.filter((c) => !c.mixed);
+  ok(reales.length === 4, "ahorcado: 4 mazos reales", `encontré ${reales.length}`);
+  ok(d.items.length === 160, "ahorcado: 160 palabras", `encontré ${d.items.length}`);
+  for (const cat of reales) {
+    const n = d.items.filter((item) => item.category === cat.id).length;
+    ok(n === 40, `ahorcado: ${cat.id} tiene 40`, `encontré ${n}`);
+  }
+  const readme = leer(path.join(ROOT, "ahorcado", "README.md"));
+  ok(/Cuatro mazos de 40 palabras/.test(readme), "ahorcado/README dice cuatro mazos de 40 palabras", primeraFrase(readme, "mazos"));
+  ok(/160 en total/.test(readme), "ahorcado/README dice 160 en total", primeraFrase(readme, "160"));
 }
 
 // después de las doce: 216 cartas

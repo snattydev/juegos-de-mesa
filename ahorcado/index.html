@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F1E9">
+  <script>
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem("ahorcado-theme"); } catch (e) {}
+      if (!theme) {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      if (theme === "dark") {
+        document.documentElement.dataset.theme = "dark";
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", "#12110F");
+      }
+    })();
+  </script>
+  <meta name="description" content="Ahorcado para juntadas: el grupo adivina la palabra letra por letra y tiene seis errores. Un solo celular.">
+  <title>Ahorcado — Juego de palabras para juntadas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231B1917'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='46' fill='%23F6F1E9' text-anchor='middle'%3EAH%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+    </svg>
+  </button>
+
+  <div class="app">
+    <!-- HOME -->
+    <main class="view home" id="viewHome">
+      <p class="kicker">Palabra oculta</p>
+      <h1 class="wordmark">Ahorcado</h1>
+      <p class="tagline">Seis errores y no hay más.</p>
+      <p class="lead">Un celular para toda la mesa. Eligen una letra por vez y la palabra se va armando sola. Si se equivocan seis veces, se termina.</p>
+
+      <section class="decks" aria-labelledby="deckLabel">
+        <p class="section-label" id="deckLabel">Elegí un mazo</p>
+        <div class="chips" id="deckChips"></div>
+      </section>
+
+      <div class="home-actions">
+        <button class="btn btn-primary btn-xl" id="startBtn" type="button">Jugar</button>
+        <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
+      </div>
+
+      <p class="record" id="recordLine">Racha: 0 · Mejor: 0</p>
+      <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
+    </main>
+
+    <!-- GAME -->
+    <section class="view game" id="viewGame" hidden>
+      <div class="game-top">
+        <button class="icon-btn" id="backBtn" type="button" aria-label="Volver al inicio">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="game-meta">
+          <span class="game-deck" id="gameDeck">Mezcla</span>
+          <span class="game-progress" id="gameStreak">Racha 0</span>
+        </div>
+        <span class="icon-btn spacer" aria-hidden="true"></span>
+      </div>
+
+      <div class="board" id="board">
+        <svg class="gallows" viewBox="0 0 200 180" role="img" aria-label="Dibujo del ahorcado">
+          <g class="structure">
+            <line x1="16" y1="168" x2="112" y2="168"/>
+            <line x1="34" y1="168" x2="34" y2="18"/>
+            <line x1="34" y1="18" x2="132" y2="18"/>
+            <line x1="132" y1="18" x2="132" y2="40"/>
+          </g>
+          <g class="figure" id="figure">
+            <circle class="part" data-part="0" cx="132" cy="55" r="15"/>
+            <line class="part" data-part="1" x1="132" y1="70" x2="132" y2="112"/>
+            <line class="part" data-part="2" x1="132" y1="80" x2="112" y2="98"/>
+            <line class="part" data-part="3" x1="132" y1="80" x2="152" y2="98"/>
+            <line class="part" data-part="4" x1="132" y1="112" x2="112" y2="142"/>
+            <line class="part" data-part="5" x1="132" y1="112" x2="152" y2="142"/>
+          </g>
+        </svg>
+
+        <p class="word" id="wordEl" aria-live="polite" aria-atomic="true"></p>
+        <p class="misses" id="missesEl">Sin errores todavía</p>
+      </div>
+
+      <div class="keyboard" id="keyboard" role="group" aria-label="Letras para elegir"></div>
+
+      <div class="game-actions" id="playActions">
+        <button class="btn btn-ghost" id="giveUpBtn" type="button">Rendirse</button>
+      </div>
+
+      <div class="result-panel" id="resultPanel" hidden>
+        <h2 class="result-title" id="resultTitle"></h2>
+        <p class="result-text" id="resultText"></p>
+        <div class="end-actions">
+          <button class="btn btn-primary btn-xl" id="nextBtn" type="button">Siguiente palabra</button>
+          <button class="btn btn-ghost" id="changeDeckBtn" type="button">Cambiar mazo</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <dialog id="howDialog">
+    <h2 class="dialog-title">Cómo se juega</h2>
+    <ol class="steps">
+      <li><strong>Elegí un mazo.</strong> Animales, comidas, lugares u objetos. Mezcla agarra de todos.</li>
+      <li><strong>La mesa elige letras.</strong> Una persona toca la letra que dice el grupo; si está, aparece en la palabra.</li>
+      <li><strong>Cada error dibuja una parte</strong> del muñeco. Con seis, se termina la palabra y se muestra cuál era.</li>
+      <li><strong>La racha cuenta las palabras seguidas</strong> que sacan entre todos. Rendirse también corta la racha.</li>
+    </ol>
+    <p class="dialog-tip">Las palabras van sin tildes, así que la letra suena igual: para «CAMALEÓN» alcanza con la O. El teclado tiene la Ñ.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-xl" id="closeHowBtn" type="button">Entendido</button>
+    </div>
+  </dialog>
+
+  <script src="data/words.js"></script>
+  <script src="assets/rules.js"></script>
+  <script src="assets/app.js"></script>
+
+<!-- Volver al selector de juegos -->
+<style id="hub-nav-style">
+  .hub-fab {
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(58px, calc(env(safe-area-inset-right) + 58px));
+    z-index: 11;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    border: none; border-radius: 50%;
+    background: transparent; color: var(--muted, #6B6259);
+    opacity: 0.5; cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body:not(:has(.theme-toggle)) .hub-fab { right: max(14px, env(safe-area-inset-right)); }
+  .hub-fab:hover { opacity: 0.85; }
+  .hub-fab:active { transform: scale(0.94); }
+  .hub-fab:focus-visible { outline: 2px solid var(--accent, #6B4A8A); outline-offset: 2px; opacity: 0.9; }
+  .hub-fab svg { width: 18px; height: 18px; }
+
+  dialog.hub-dialog {
+    width: min(380px, calc(100vw - 36px));
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--line-strong, rgba(27, 25, 23, 0.2));
+    background: var(--surface, #FFFDF9);
+    color: var(--ink, #1B1917);
+    font-family: inherit;
+  }
+  dialog.hub-dialog::backdrop { background: rgba(10, 9, 8, 0.55); }
+  dialog.hub-dialog h2 { margin: 0 0 8px; font-size: 1.15rem; letter-spacing: -0.01em; }
+  dialog.hub-dialog p { margin: 0 0 16px; font-size: 0.88rem; line-height: 1.5; color: var(--muted, #6B6259); }
+  .hub-actions { display: grid; gap: 8px; }
+  .hub-btn {
+    min-height: 44px; border-radius: 12px;
+    border: 1px solid var(--line-strong, rgba(27, 25, 23, 0.2));
+    background: transparent; color: inherit;
+    font: inherit; font-size: 0.92rem; cursor: pointer;
+  }
+  .hub-btn:focus-visible { outline: 2px solid var(--accent, #6B4A8A); outline-offset: 2px; }
+  .hub-btn-primary { background: var(--ink, #1B1917); color: var(--bg, #F6F1E9); border-color: var(--ink, #1B1917); }
+  @media (prefers-reduced-motion: reduce) { .hub-fab { transition: none; } }
+</style>
+
+<button class="hub-fab" id="hubFab" type="button" aria-label="Volver a los juegos" aria-haspopup="dialog">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/>
+    <rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/>
+  </svg>
+</button>
+
+<dialog class="hub-dialog" id="hubDialog" aria-labelledby="hubTitle">
+  <h2 id="hubTitle">¿Volver a los juegos?</h2>
+  <p>Volvés al selector. Si hay una partida en curso, se pierde.</p>
+  <div class="hub-actions">
+    <button class="hub-btn hub-btn-primary" id="hubStay" type="button">Seguir acá</button>
+    <button class="hub-btn" id="hubGo" type="button">Volver a los juegos</button>
+  </div>
+</dialog>
+
+<script>
+  (function () {
+    var fab = document.getElementById("hubFab");
+    var dialog = document.getElementById("hubDialog");
+    var stay = document.getElementById("hubStay");
+    var go = document.getElementById("hubGo");
+    if (!fab || !dialog) return;
+    fab.addEventListener("click", function () {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+        stay.focus();
+      } else if (window.confirm("¿Volver a los juegos? Si hay una partida en curso, se pierde.")) {
+        window.location.href = "../";
+      }
+    });
+    stay.addEventListener("click", function () { dialog.close(); });
+    go.addEventListener("click", function () { window.location.href = "../"; });
+  })();
+</script>
+
+</body>
+</html>
