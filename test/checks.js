@@ -47,6 +47,7 @@ const JUEGOS = [
   { slug: "ahorcado", indice: "ahorcado/" },
   { slug: "yo-nunca", indice: "yo-nunca/" },
   { slug: "mas-probable", indice: "mas-probable/" },
+  { slug: "incomodometro", indice: "incomodometro/" },
   { slug: "despues-de-las-doce", indice: "despues-de-las-doce/" },
   { slug: "hdp", indice: "hdp/public/" },
 ];
@@ -148,6 +149,15 @@ function conDatosGlobal(archivo, nombreGlobal) {
   const readme = leer(path.join(ROOT, "mas-probable", "README.md"));
   ok(/100 consignas/.test(readme), "mas-probable/README dice 100 consignas", primeraFrase(readme, "consigna"));
   ok(readme.includes("3 a 12"), "mas-probable/README dice 3 a 12");
+}
+
+// incomodometro: 80 situaciones
+{
+  const d = conDatosGlobal(path.join(ROOT, "incomodometro", "data", "prompts.js"), "INCOMODOMETRO_DATA");
+  ok(Array.isArray(d) && d.length === 80, "incomodometro: 80 situaciones", `encontré ${Array.isArray(d) ? d.length : typeof d}`);
+  const readme = leer(path.join(ROOT, "incomodometro", "README.md"));
+  ok(/80 situaciones/.test(readme), "incomodometro/README dice 80 situaciones", primeraFrase(readme, "situaciones"));
+  ok(readme.includes("3 a 12"), "incomodometro/README dice 3 a 12");
 }
 
 // en-palabras: cuatro mazos de 40
