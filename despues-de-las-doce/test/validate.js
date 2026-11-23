@@ -96,12 +96,25 @@ INTENSITIES.forEach((intensity) => {
   });
 });
 
-// 7. Hay una carta final por intensidad
+// 7. Hay una carta final por intensidad, y habla en el idioma del modo:
+//    la versión de pareja no puede mandar a "elegir a alguien del grupo".
 INTENSITIES.forEach((intensity) => {
+  const final = finalCards[intensity];
+  check("carta final para " + intensity, Boolean(final), final ? "" : "falta");
+
+  ["solo", "grupo"].forEach((mode) => {
+    check(
+      "carta final " + intensity + "/" + mode + " con texto",
+      Boolean(final && typeof final[mode] === "string" && final[mode].trim() !== ""),
+      final && final[mode] ? "" : "falta o vacía"
+    );
+  });
+
+  const solo = (final && final.solo) || "";
   check(
-    "carta final para " + intensity,
-    Boolean(finalCards[intensity] && finalCards[intensity].text),
-    finalCards[intensity] ? "" : "falta"
+    "carta final " + intensity + "/solo no manda a elegir a nadie",
+    !/eleg[ií] a alguien|del grupo|de la ronda/i.test(solo),
+    solo ? "dice: " + solo : ""
   );
 });
 

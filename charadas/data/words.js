@@ -1,12 +1,14 @@
 /* Contenido de Charadas: cuatro mazos de 120 items, más Mezcla (todos juntos).
-   Cada item lleva su categoría: así se arma el mazo, se testea y se puede filtrar. */
+   Cada item lleva su categoría: así se arma el mazo, se testea y se puede filtrar.
+   Mezcla es una categoría compuesta: no tiene items propios, se marca con
+   `mixed: true` para que el código no dependa de comparar el id "mezcla". */
 window.CHARADAS_DATA = {
   categories: [
     { id: "peliculas", label: "Películas y series", color: "#7A3E2F" },
     { id: "objetos", label: "Objetos", color: "#2E5F76" },
     { id: "animales", label: "Animales", color: "#4F6B2E" },
     { id: "acciones", label: "Acciones", color: "#8A4A6B" },
-    { id: "mezcla", label: "Mezcla", color: "#1B1917" }
+    { id: "mezcla", label: "Mezcla", color: "#1B1917", mixed: true }
   ],
   items: [
     // Películas y series

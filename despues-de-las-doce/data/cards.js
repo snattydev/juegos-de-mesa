@@ -323,18 +323,23 @@
     };
   });
 
+  // La carta final cierra la partida, así que tiene que hablarle al modo que
+  // se está jugando: en pareja no se puede "elegir a alguien del grupo".
   var finalCards = {
     previa: {
       intensity: "previa",
-      text: "Que la persona a la que más desees se acerque y te dé el beso que daría comienzo a todo."
+      solo: "Acérquense y dense el beso que da comienzo a todo.",
+      grupo: "Que la persona a la que más desees se acerque y te dé el beso que daría comienzo a todo."
     },
     caliente: {
       intensity: "caliente",
-      text: "Elegí a alguien y compartan un beso largo, sin apuro, como si nadie más estuviera mirando."
+      solo: "Beso largo, sin apuro, como si nadie más estuviera mirando.",
+      grupo: "Elegí a alguien y compartan un beso largo, sin apuro, como si nadie más estuviera mirando."
     },
     "sin-filtro": {
       intensity: "sin-filtro",
-      text: "Sin apuro y sin testigos, cumplan la fantasía que más se repitieron esta noche."
+      solo: "Sin apuro y sin testigos, cumplan la fantasía que más se repitieron esta noche.",
+      grupo: "Sin apuro y sin testigos, cumplan la fantasía que más se repitieron esta noche."
     }
   };
 

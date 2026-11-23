@@ -21,7 +21,7 @@ Si el dispositivo no manda datos, el sensor se apaga solo y queda un aviso: **lo
 
 ## Contenido
 
-- 4 mazos de 120 items cada uno: **Películas y series**, **Objetos**, **Animales** y **Acciones**.
+- 4 mazos de 120 items cada uno: **Películas y series**, **Objetos**, **Animales** y **Acciones**. **Mezcla** no es un quinto mazo: es una categoría compuesta (`mixed: true`) que juega los 480 items juntos.
 - **Mezcla** combina los 480.
 - Todo en `data/words.js` (`window.CHARADAS_DATA`), cada item etiquetado con su categoría.
 

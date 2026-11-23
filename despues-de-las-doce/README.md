@@ -45,4 +45,5 @@ No hace falta descargar nada: abrí `index.html` desde el disco, o serví la car
 - **Una carta por vez**, legible desde el celular, sin scroll de página.
 - **El contenido escala de verdad**: Previa es tensión y química; Caliente es contacto y confesiones; Sin filtro es lo más zarpado que permite el marco (sugerente, nunca gráfico).
 - **Sin duplicados** en todo el mazo; cada carta se lee sola, sin plantillas.
+- **La carta final respeta el modo**: hay una versión para pareja y otra para grupo, porque "elegí a alguien" no se puede cumplir jugando de a dos.
 - **Nombres del grupo** persistidos en `localStorage`, borrables en cualquier momento.

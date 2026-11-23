@@ -251,7 +251,13 @@ function drawCard() {
 }
 
 function drawFinalCard() {
-  state.current = { card: DATA.finalCards[state.intensity], isFinal: true };
+  const final = DATA.finalCards[state.intensity];
+  // La carta final se elige por modo: en pareja no puede hablar de "elegir a alguien".
+  const text = state.mode === "duo" ? final.solo : final.grupo;
+  state.current = {
+    card: { intensity: final.intensity, text: text },
+    isFinal: true
+  };
   state.stats.rondas += 1;
   renderCard();
 }

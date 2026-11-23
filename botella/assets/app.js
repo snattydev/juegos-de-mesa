@@ -419,6 +419,11 @@
     state.pendingIndex = -1;
     state.deck = WHEEL.createDeck((DECKS[state.level] || DECKS.suave).questions);
 
+    /* La tarjeta anterior puede haber quedado visible con el nivel viejo:
+       se limpia antes de mostrar la vista, así no se lee una etiqueta mentirosa. */
+    qcardText.textContent = "";
+    qcardTag.textContent = (DECKS[state.level] || DECKS.suave).label;
+
     viewSetup.hidden = true;
     viewGame.hidden = false;
 

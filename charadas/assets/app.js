@@ -238,7 +238,8 @@
   // ---------- Mazo ----------
 
   function buildPool(category) {
-    const items = category === "mezcla"
+    const meta = CATEGORY_BY_ID[category];
+    const items = meta && meta.mixed
       ? DATA.items
       : DATA.items.filter((item) => item.category === category);
 
