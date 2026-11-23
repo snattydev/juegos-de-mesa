@@ -6,20 +6,21 @@ Es un juego de juntada: humor picante argentino, pero sin explicitud.
 
 ## Cómo se juega
 
-1. **Uno crea la sala** desde su navegador, sin instalar nada. De 3 a 12 personas.
-2. **Invita al resto con un código de texto.** Por cada jugador genera una invitación, se la manda (WhatsApp, mail, lo que sea) y pega la respuesta que le devuelve. Con eso queda conectado.
+De 3 a 12 personas. Uno hace de mesa y el resto entra con un código.
+
+1. **Uno crea la sala** desde su navegador, sin instalar nada.
+2. **Invita al resto.** Por cada jugador genera una invitación, se la manda (WhatsApp, mail, lo que sea) y pega la respuesta que le devuelve. Con eso queda conectado.
 3. **Cada ronda uno es el juez** y lee la frase en voz alta. Los demás eligen de su mano las cartas para completarla del modo más gracioso posible.
 4. **El juez elige la que más le gusta**, sin saber de quién es. Quien la jugó suma un punto.
 5. **El juez va rotando** y gana quien primero junta los puntos acordados (5 por defecto, configurable entre 3 y 10).
 
 ## Cómo conectarse
 
-No hay servidor: el que crea la sala es el host y su navegador hace de mesa.
+No hay servidor: el que crea la sala es el host y su navegador hace de mesa. Funciona entre dispositivos en la misma red o desde cualquier lado, mientras los códigos se puedan pasar por mensaje.
 
-1. Todos abren el juego por la misma WiFi (o desde donde estén, mientras los códigos se puedan pasar).
-2. El host toca **Crear sala** y después **Generar invitación**.
-3. Le pasa ese texto a un jugador. El jugador lo pega en **¿Te invitaron?**, pone su nombre y recibe un código de respuesta.
-4. El jugador le devuelve ese código al host, el host lo pega en **Pegar respuesta** y toca **Conectar jugador**.
+1. El host toca **Crear sala** y después **Generar invitación**.
+2. Le pasa ese texto a un jugador. El jugador lo pega en **¿Te invitaron?**, pone su nombre y recibe un código de respuesta.
+3. El jugador le devuelve ese código al host, el host lo pega en **Pegar respuesta** y toca **Conectar jugador**.
 
 Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no depender de ningún servidor.
 
@@ -28,9 +29,10 @@ Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no dep
 - **`public/assets/engine.js`**: el motor del juego (mazos, turnos, puntajes, validaciones). Corre en el navegador del host.
 - **`public/assets/net.js`**: WebRTC. Cada jugador tiene su propio data channel contra el host; el host difunde el estado.
 - **`public/assets/local.js`**: traduce las viejas llamadas `/api/...` a acciones del motor, así la interfaz no cambia.
-- **`public/assets/app.js`**: la interfaz de siempre.
+- **`public/assets/app.js`**: la interfaz.
+- **`test/engine.test.js`**: pruebas del motor, sin dependencias.
 
-Funciona sobre `http://` en la red local: no usa cámara ni micrófono, solo data channels, que no piden contexto seguro.
+Los data channels no piden contexto seguro, así que funciona igual sobre `http://` en la red local que sobre el sitio publicado en `https://`.
 
 ## Decisiones del juego
 

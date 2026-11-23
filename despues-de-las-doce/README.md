@@ -1,8 +1,8 @@
 # Después de las doce
 
-Un juego de cartas picante para adultos: verdades, retos y deseos para jugar en pareja o con un grupo de gente de confianza. La noche empieza cuando lo deciden ustedes.
+Un juego de cartas picante: verdades, retos y deseos para jugar en pareja o con un grupo de gente de confianza. La noche empieza cuando lo deciden ustedes.
 
-> **Para adultos.** El juego más subido de tono del repo: +18, de a dos o en grupo, y con reglas de la casa a la vista. No tiene cuentas, no envía nada y no guarda historial.
+> **Para adultos.** Es el juego más subido de tono del repo, de a dos o en grupo, con reglas de la casa a la vista. No tiene cuentas, no envía nada y no guarda historial.
 
 ## Qué es
 
@@ -16,14 +16,15 @@ Cada carta está pensada para **pareja** (solo), para **grupo**, o para **ambos*
 
 ## Cómo se juega
 
-1. Confirmás que sos mayor de 18.
-2. Elegís modo: **Uno a uno** (turnos alternados) o **Grupo** (de 3 a 8, la app elige a quién le toca o lo eligen a mano).
-3. Elegís la intensidad y empezás.
-4. Se saca una carta por vez. Cada una se resuelve con uno de tres botones:
+El aviso de que es para adultos está en la intro del índice, antes de entrar. Adentro no hay compuerta.
+
+1. Elegís modo: **Uno a uno** (turnos alternados) o **Grupo** (de 3 a 8, la app elige a quién le toca o lo eligen a mano).
+2. Elegís la intensidad y empezás.
+3. Se saca una carta por vez. Cada una se resuelve con uno de tres botones:
    - **Cumplida**: sube la tensión.
    - **Pasala**: avanza sin preguntar ni penalizar.
    - **Otra carta**: se descarta y se reparte otra.
-5. Cuando la tensión llega al 100% se desbloquea una **carta final** del nivel. Después, la pantalla de cierre con el resumen (cumplidas, pasadas, descartadas y rondas).
+4. Cuando la tensión llega al 100% se desbloquea una **carta final** del nivel. Después, la pantalla de cierre con el resumen (cumplidas, pasadas, descartadas y rondas).
 
 No hay puntaje ni ganadores: la tensión es del grupo, no de nadie en particular.
 
@@ -37,7 +38,7 @@ No hay puntaje ni ganadores: la tensión es del grupo, no de nadie en particular
 
 ## Cómo abrirlo
 
-No hace falta descargar nada: abrí `index.html` desde el disco, o serví la carpeta con `python3 -m http.server`.
+Está publicado junto al resto del sitio, o se abre `index.html` desde el disco. Es un sitio estático: no necesita servidor ni instalación.
 
 ## Decisiones del juego
 

@@ -12,18 +12,7 @@ Juego de confesiones para juntadas. Un solo celular en la mesa: se lee una frase
 
 No hay puntos ni ganador moral: solo se trata de sobrevivir. El nivel picante sube el tono, sin explicitud.
 
-## Cómo abrirlo
-
-Es un sitio estático sin build. Se puede abrir `index.html` con doble clic o servir la carpeta:
-
-```sh
-cd yo-nunca
-python3 -m http.server 4176
-```
-
-Y entrar desde el celular o la compu a `http://localhost:4176`.
-
-No hay dependencias, cuentas ni servidores. Los nombres, la intensidad y las vidas se guardan solo en el `localStorage` de ese dispositivo.
+Sitio estático: se abre `index.html` con doble clic o se sirve la carpeta. Sin dependencias, cuentas ni servidores. Los nombres, la intensidad y las vidas se guardan solo en el `localStorage` de ese dispositivo.
 
 ## Contenido
 
@@ -33,7 +22,7 @@ No hay dependencias, cuentas ni servidores. Los nombres, la intensidad y las vid
 - **Media**: alcohol, exs, mentiras grandes, plata, trabajo, fiestas, higiene, vínculos, familia, redes, travesuras y viajes.
 - **Picante**: lugares, juguetes, fotos, fantasías, reencuentros, apps, oficina, cuerpo, vergüenzas, privacidad, amigos y después del encuentro.
 
-Cada nivel tiene 120 frases únicas, completas y sin placeholders. Los temas están separados a propósito para no repetir el mismo chiste en los tres niveles.
+Cada nivel tiene 120 frases únicas y completas. Los temas están separados a propósito para no repetir el mismo chiste en los tres niveles.
 
 ## Estructura
 
@@ -45,17 +34,13 @@ yo-nunca/
 │   └── styles.css      todo el estilo
 ├── data/
 │   └── statements.js   360 frases en window.YO_NUNCA_DATA
-├── tests/
-│   └── check.js        verificación con Node, sin dependencias
-├── README.md
-└── AGENTS.md
+└── tests/
+    └── check.js        verificación con Node, sin dependencias
 ```
 
 ## Verificación
 
 ```sh
-node --check assets/app.js
-node --check data/statements.js
 node tests/check.js
 ```
 
@@ -63,4 +48,4 @@ El test carga `statements.js` y `app.js` en un contexto de Node sin DOM, valida 
 
 ## Diseño
 
-Mobile-first, pensado para 390 × 844 y 390 × 667. La página no scrollea: la tarjeta, la grilla de jugadores y el botón principal se reparten el alto de la pantalla. El botón de avance queda siempre al alcance del pulgar. Respeta `prefers-reduced-motion`, usa `focus-visible`, `aria-live` y áreas seguras.
+Mobile-first: la página no scrollea, la tarjeta, la grilla de jugadores y el botón principal se reparten el alto de la pantalla, y el botón de avance queda siempre al alcance del pulgar.

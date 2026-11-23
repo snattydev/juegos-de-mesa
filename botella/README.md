@@ -11,6 +11,8 @@ Sitio estático. Se abre `index.html` con doble clic o se sirve la carpeta. No h
 3. **Girá.** La rueda da varias vueltas y frena justo en un sector. Vibra en el celular si el navegador lo permite.
 4. **Respondé en voz alta.** Después podés pedir otra pregunta o girar de nuevo. Cada mazo tiene 45 preguntas y no se repiten hasta agotarlo.
 
+Son tres mazos de 45 preguntas, uno por intensidad.
+
 ## Estructura
 
 ```
@@ -29,21 +31,13 @@ botella/
 ## Pruebas
 
 ```bash
-node --check assets/app.js
-node --check assets/wheel.js
-node --check data/questions.js
 node test/run-tests.js
 ```
 
-Las pruebas validan que cada mazo tiene 45 preguntas, que no hay repetidas dentro ni entre mazos, que `pickSector` devuelve índices válidos para 2 a 12 jugadores y que la rotación calculada deja el sector elegido exactamente bajo el puntero.
+Valida que cada mazo tiene 45 preguntas, que no hay repetidas dentro ni entre mazos, que `pickSector` devuelve índices válidos para 2 a 12 jugadores y que la rotación calculada deja el sector elegido exactamente bajo el puntero.
 
 ## Detalles de implementación
 
-- La rueda se dibuja con `conic-gradient` (un sector por jugador, colores alternados y una unión fina del color del papel) y etiquetas rotadas. No hay imágenes.
-- El giro es una transición de `transform/rotate` de ~4 s con `cubic-bezier`; el ángulo final se calcula para que el centro del sector quede en el puntero. Con `prefers-reduced-motion` la transición baja a 0,5 s y da una sola vuelta, pero cae igual de exacto.
-- Un solo viewport: `100dvh`, `overflow: hidden` y safe-area. La lista de jugadores es lo único que puede scrollear, y solo en pantallas muy chicas.
-- Sin módulos ES ni `fetch`: todo se carga con `<script>` para que funcione abriendo el archivo desde el disco.
-
-## Créditos
-
-Proyecto hobby hecho con amor por **snatty**.
+- La rueda se dibuja con `conic-gradient` y etiquetas rotadas: no hay imágenes.
+- El ángulo final se calcula para que el centro del sector quede en el puntero, con `prefers-reduced-motion` respetado.
+- Un solo viewport: `100dvh`, `overflow: hidden` y safe-area.
