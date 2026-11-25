@@ -79,7 +79,6 @@
   }
 
   const STORE = {
-    theme: "charadas-theme",
     records: "charadas-records",
     setup: "charadas-setup"
   };
@@ -120,7 +119,6 @@
   const howBtn = document.getElementById("howBtn");
   const howDialog = document.getElementById("howDialog");
   const closeHowBtn = document.getElementById("closeHowBtn");
-  const themeToggle = document.getElementById("themeToggle");
 
   const timerEl = document.getElementById("timer");
   const timerNum = document.getElementById("timerNum");
@@ -154,8 +152,6 @@
   const sensorRow = document.getElementById("sensorRow");
   const sensorBtn = document.getElementById("sensorBtn");
   const sensorNote = document.getElementById("sensorNote");
-
-  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
   // ---------- Storage ----------
 
@@ -199,7 +195,6 @@
     viewSetup.hidden = name !== "setup";
     viewPlay.hidden = name !== "play";
     viewEnd.hidden = name !== "end";
-    themeToggle.hidden = name !== "setup";
     if (name === "setup") {
       refreshRecordNote();
     }
@@ -765,29 +760,6 @@
     wakeLock = null;
   }
 
-  // ---------- Tema ----------
-
-  function setTheme(theme, persist) {
-    const dark = theme === "dark";
-
-    if (dark) {
-      document.documentElement.dataset.theme = "dark";
-    } else {
-      delete document.documentElement.dataset.theme;
-    }
-
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute("content", dark ? "#12110F" : "#F6F1E9");
-    }
-
-    themeToggle.setAttribute("aria-pressed", String(dark));
-    themeToggle.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-
-    if (persist) {
-      try { global.localStorage.setItem(STORE.theme, theme); } catch (e) {}
-    }
-  }
-
   // ---------- Eventos ----------
 
   startBtn.addEventListener("click", startRound);
@@ -799,10 +771,6 @@
   adjustBtn.addEventListener("click", () => {
     showView("setup");
     startBtn.focus({ preventScroll: true });
-  });
-
-  themeToggle.addEventListener("click", () => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
   });
 
   howBtn.addEventListener("click", () => {
@@ -892,7 +860,6 @@
   buildCategoryChips();
   buildDurations();
   paintSensor();
-  setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
   refreshRecordNote();
 
   if (!tiltSupported()) {

@@ -187,41 +187,6 @@ function init() {
   const rankingEmpty = document.getElementById("rankingEmpty");
   const rankingContinueBtn = document.getElementById("rankingContinueBtn");
 
-  const themeToggle = document.getElementById("themeToggle");
-  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-  const THEME_KEY = "mas-probable-theme";
-
-  function setTheme(theme, persist) {
-    const dark = theme === "dark";
-
-    if (dark) {
-      document.documentElement.dataset.theme = "dark";
-    } else {
-      delete document.documentElement.dataset.theme;
-    }
-
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute("content", dark ? "#12110F" : "#F6F1E9");
-    }
-
-    if (themeToggle) {
-      themeToggle.setAttribute("aria-pressed", String(dark));
-      themeToggle.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-    }
-
-    if (persist) {
-      try { localStorage.setItem(THEME_KEY, theme); } catch (error) {}
-    }
-  }
-
-  setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", () => {
-      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
-    });
-  }
-
   const state = {
     players: [],
     queue: [],

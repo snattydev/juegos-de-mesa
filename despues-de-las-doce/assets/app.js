@@ -416,7 +416,9 @@ function showEnd() {
 
 startBtn.addEventListener("click", startGame);
 
-setupBackBtn.addEventListener("click", () => { document.getElementById("hubFab").click(); });
+setupBackBtn.addEventListener("click", () => {
+  if (global.JuegosChrome) global.JuegosChrome.openHubDialog(setupBackBtn);
+});
 gameBackBtn.addEventListener("click", () => show(viewSetup));
 settingsBtn.addEventListener("click", () => show(viewSetup));
 againBtn.addEventListener("click", startGame);

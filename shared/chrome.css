@@ -1,0 +1,163 @@
+/* Chrome compartido: toggle de tema, botón de volver al selector y su diálogo. */
+
+.theme-toggle {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 15;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted, #6B6259);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-toggle:hover {
+  opacity: 0.9;
+  background: var(--line, rgba(27, 25, 23, 0.10));
+  color: var(--ink, #1B1917);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle:focus-visible {
+  opacity: 0.95;
+  outline: 2px solid var(--accent, var(--ink, #1B1917));
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.theme-toggle .icon-sun { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+.hub-fab {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 15;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted, #6B6259);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body:has(.theme-toggle) .hub-fab {
+  right: max(58px, calc(env(safe-area-inset-right) + 58px));
+}
+
+body:has(.rules-fab) .hub-fab {
+  top: max(17px, calc(env(safe-area-inset-top) + 3px));
+  right: max(66px, calc(env(safe-area-inset-right) + 66px));
+}
+
+.hub-fab:hover {
+  opacity: 0.9;
+  background: var(--line, rgba(27, 25, 23, 0.10));
+  color: var(--ink, #1B1917);
+}
+
+.hub-fab:active {
+  transform: scale(0.94);
+}
+
+.hub-fab:focus-visible {
+  opacity: 0.95;
+  outline: 2px solid var(--accent, var(--ink, #1B1917));
+  outline-offset: 2px;
+}
+
+.hub-fab svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* En partida se esconden para no tapar controles de la barra superior. */
+body:has(.view:not(#viewHome):not(#viewSetup):not([hidden])) .theme-toggle,
+body:has(.view:not(#viewHome):not(#viewSetup):not([hidden])) .hub-fab {
+  display: none !important;
+}
+
+dialog.hub-dialog {
+  width: min(380px, calc(100vw - 36px));
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--line-strong, var(--line, rgba(27, 25, 23, 0.2)));
+  background: var(--surface, var(--paper, #FFFDF9));
+  color: var(--ink, #1B1917);
+  font-family: inherit;
+}
+
+dialog.hub-dialog::backdrop {
+  background: var(--backdrop, rgba(10, 9, 8, 0.55));
+}
+
+dialog.hub-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+dialog.hub-dialog p {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--muted, #6B6259);
+}
+
+.hub-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.hub-btn {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--line-strong, var(--line, rgba(27, 25, 23, 0.2)));
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.hub-btn:focus-visible {
+  outline: 2px solid var(--accent, var(--ink, #1B1917));
+  outline-offset: 2px;
+}
+
+.hub-btn-primary {
+  background: var(--ink, #1B1917);
+  color: var(--bg, #F6F1E9);
+  border-color: var(--ink, #1B1917);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .hub-fab {
+    transition: none;
+  }
+}

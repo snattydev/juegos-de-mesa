@@ -68,47 +68,6 @@
   color-scheme: dark;
 }
 
-/* ---------- Theme toggle ---------- */
-
-.theme-toggle {
-  position: fixed;
-  top: max(14px, env(safe-area-inset-top));
-  right: max(14px, env(safe-area-inset-right));
-  z-index: 10;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  opacity: 0.5;
-  cursor: pointer;
-  transition: opacity 0.18s ease, background 0.18s ease, color 0.18s ease;
-}
-
-.theme-toggle:hover {
-  opacity: 1;
-  background: var(--line);
-  color: var(--ink);
-}
-
-.theme-toggle:focus-visible {
-  opacity: 1;
-  outline: 2px solid var(--wine);
-  outline-offset: 2px;
-}
-
-.theme-toggle svg { width: 18px; height: 18px; display: block; }
-.theme-toggle .icon-sun { display: none; }
-[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
-
-/* El toggle vive solo en el inicio; en partida se esconde para no tapar controles. */
-body:has(#viewGame:not([hidden])) .theme-toggle,
-body:has(#viewEnd:not([hidden])) .theme-toggle { display: none !important; }
-[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
-
 * {
   box-sizing: border-box;
 }

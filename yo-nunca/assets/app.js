@@ -127,42 +127,6 @@
   const closeHowBtn = document.getElementById("closeHowBtn");
   const srStatus = document.getElementById("srStatus");
 
-  // ---------- Tema claro/oscuro ----------
-
-  const themeToggle = document.getElementById("themeToggle");
-  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-
-  function setTheme(theme, persist) {
-    const dark = theme === "dark";
-
-    if (dark) {
-      document.documentElement.dataset.theme = "dark";
-    } else {
-      delete document.documentElement.dataset.theme;
-    }
-
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute("content", dark ? "#12100E" : "#F4ECDF");
-    }
-
-    if (themeToggle) {
-      themeToggle.setAttribute("aria-pressed", String(dark));
-      themeToggle.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-    }
-
-    if (persist) {
-      try { localStorage.setItem("yo-nunca-theme", theme); } catch (error) {}
-    }
-  }
-
-  setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function () {
-      setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
-    });
-  }
-
   function readStore(key) {
     try {
       return localStorage.getItem(key);

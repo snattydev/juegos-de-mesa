@@ -58,9 +58,6 @@
   var nextQBtn = $("nextQBtn");
   var howDialog = $("howDialog");
   var closeHowBtn = $("closeHowBtn");
-  var themeToggle = $("themeToggle");
-  var themeColorMeta = document.querySelector('meta[name="theme-color"]');
-  var themeSchemeMeta = document.querySelector('meta[name="color-scheme"]');
 
   var state = {
     players: [],
@@ -478,34 +475,6 @@
     }
   }
 
-  /* ---------- Tema ---------- */
-
-  function setTheme(theme, persist) {
-    var dark = theme === "dark";
-
-    if (dark) {
-      document.documentElement.dataset.theme = "dark";
-    } else {
-      delete document.documentElement.dataset.theme;
-    }
-
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute("content", dark ? "#12110F" : "#F6F1E9");
-    }
-    if (themeSchemeMeta) {
-      themeSchemeMeta.setAttribute("content", dark ? "dark" : "light");
-    }
-
-    if (themeToggle) {
-      themeToggle.setAttribute("aria-pressed", dark ? "true" : "false");
-      themeToggle.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-    }
-
-    if (persist) {
-      try { localStorage.setItem("botella-theme", theme); } catch (error) {}
-    }
-  }
-
   /* ---------- Eventos ---------- */
 
   addForm.addEventListener("submit", function (event) {
@@ -530,15 +499,6 @@
   nextQBtn.addEventListener("click", nextQuestion);
 
   closeHowBtn.addEventListener("click", closeHow);
-
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function () {
-      setTheme(
-        document.documentElement.dataset.theme === "dark" ? "light" : "dark",
-        true
-      );
-    });
-  }
 
   howDialog.addEventListener("click", function (event) {
     if (event.target === howDialog) closeHow();
@@ -572,7 +532,6 @@
   load();
   applyLevel();
   renderPlayers();
-  setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
 
   if (state.players.length === 0) {
     nameInput.focus({ preventScroll: true });

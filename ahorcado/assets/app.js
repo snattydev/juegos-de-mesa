@@ -14,7 +14,6 @@ if (!RULES) {
 const MAX_MISSES = RULES.MAX_MISSES;
 const LETTERS = RULES.LETTERS;
 const KEY = {
-  theme: "ahorcado-theme",
   deck: "ahorcado-deck",
   best: "ahorcado-best"
 };
@@ -385,42 +384,6 @@ window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(fitWord, 120);
 });
-
-/* ---------- tema ---------- */
-
-const themeToggle = document.getElementById("themeToggle");
-const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-
-function setTheme(theme, persist) {
-  const dark = theme === "dark";
-
-  if (dark) {
-    document.documentElement.dataset.theme = "dark";
-  } else {
-    delete document.documentElement.dataset.theme;
-  }
-
-  if (themeColorMeta) {
-    themeColorMeta.setAttribute("content", dark ? "#12110F" : "#F6F1E9");
-  }
-
-  if (themeToggle) {
-    themeToggle.setAttribute("aria-pressed", String(dark));
-    themeToggle.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-  }
-
-  if (persist) {
-    try { localStorage.setItem(KEY.theme, theme); } catch (e) {}
-  }
-}
-
-setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", false);
-
-if (themeToggle) {
-  themeToggle.addEventListener("click", () => {
-    setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
-  });
-}
 
 /* ---------- arranque ---------- */
 

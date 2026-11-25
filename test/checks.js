@@ -40,17 +40,12 @@ function primeraFrase(texto, termino) {
 
 /* ---------- juegos declarados ---------- */
 
-const JUEGOS = [
-  { slug: "en-palabras", indice: "en-palabras/" },
-  { slug: "botella", indice: "botella/" },
-  { slug: "charadas", indice: "charadas/" },
-  { slug: "ahorcado", indice: "ahorcado/" },
-  { slug: "yo-nunca", indice: "yo-nunca/" },
-  { slug: "mas-probable", indice: "mas-probable/" },
-  { slug: "incomodometro", indice: "incomodometro/" },
-  { slug: "despues-de-las-doce", indice: "despues-de-las-doce/" },
-  { slug: "hdp", indice: "hdp/" },
-];
+const CATALOG = require(path.join(ROOT, "shared", "games.js"));
+const JUEGOS = CATALOG.games.map((g) => ({
+  slug: g.slug,
+  indice: `${g.slug}/`,
+  darkOnly: Boolean(g.darkOnly)
+}));
 
 /* ---------- 1. estructura ---------- */
 
@@ -68,23 +63,16 @@ for (const juego of JUEGOS) {
 
 console.log("\n2. Índice");
 const htmlIndice = leer(path.join(ROOT, "index.html"));
-const hrefs = [...htmlIndice.matchAll(/href="([^"#?]+)"/g)]
-  .map((m) => m[1])
-  .filter((h) => !h.startsWith("http") && !h.startsWith("data:"));
-
-for (const h of hrefs) {
-  const destino = path.join(ROOT, h);
-  ok(fs.existsSync(destino), `link del índice responde: ${h}`);
-}
-
+ok(htmlIndice.includes("shared/theme.js"), "el índice carga shared/theme.js");
+ok(htmlIndice.includes("shared/chrome.css"), "el índice carga shared/chrome.css");
+ok(htmlIndice.includes("shared/games.js"), "el índice carga shared/games.js");
+ok(htmlIndice.includes("shared/chrome.js"), "el índice carga shared/chrome.js");
+ok(htmlIndice.includes('id="gamesGrid"'), "el índice declara la grilla #gamesGrid");
+ok(htmlIndice.includes('id="introDialog"'), "el índice declara el diálogo #introDialog");
+ok(CATALOG.games.length === 9, `shared/games.js declara 9 juegos`, `encontré ${CATALOG.games.length}`);
 for (const juego of JUEGOS) {
-  ok(hrefs.includes(juego.indice), `el índice linkea ${juego.indice}`);
-  ok(htmlIndice.includes(`data-intro-title`), "el índice usa intros por juego");
+  ok(fs.existsSync(path.join(ROOT, juego.indice, "index.html")), `destino del catálogo existe: ${juego.indice}`);
 }
-
-// una tarjeta por juego, ni más ni menos
-const tarjetas = (htmlIndice.match(/class="game"/g) || []).length;
-ok(tarjetas === JUEGOS.length, `el índice tiene ${JUEGOS.length} tarjetas`, `encontré ${tarjetas}`);
 
 /* ---------- 3. links internos de los README ---------- */
 
