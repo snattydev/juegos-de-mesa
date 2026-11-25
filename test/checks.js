@@ -4,17 +4,17 @@
 /**
  * Chequeos de coherencia del repo.
  *
- * Verifica que lo que dicen los README coincida con lo que hace el código:
- * rutas de archivos, comandos de test, conteos de mazos y links del índice.
- * No reemplaza los tests de cada juego: los corre.
+ * Verifica estructura, descubrimiento en shared/games.js, assets compartidos,
+ * links de README/AGENTS, conteos contra los datasets, coherencia de contenido,
+ * sintaxis JS y ejecución de todas las suites de tests.
  *
  * Uso:  node test/checks.js
- * Sale con código 1 si algo no cierra.
+ * Sale con código 1 si algo falla.
  */
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 
 const ROOT = path.resolve(__dirname, "..");
 let fallas = 0;
@@ -32,66 +32,161 @@ function leer(p) {
   return fs.readFileSync(p, "utf8");
 }
 
-// la frase del README que menciona un término, para mostrar qué dice si falla
 function primeraFrase(texto, termino) {
   const linea = texto.split("\n").find((l) => l.includes(termino));
   return linea ? linea.trim().slice(0, 80) : `no menciona "${termino}"`;
 }
 
-/* ---------- juegos declarados ---------- */
-
 const CATALOG = require(path.join(ROOT, "shared", "games.js"));
-const JUEGOS = CATALOG.games.map((g) => ({
-  slug: g.slug,
-  indice: `${g.slug}/`,
-  darkOnly: Boolean(g.darkOnly)
-}));
+const JUEGOS = CATALOG.games;
 
-/* ---------- 1. estructura ---------- */
+/* ---------- 1. estructura y descubrimiento ---------- */
 
-console.log("\n1. Estructura");
+console.log("\n1. Estructura y descubrimiento");
+
+const ROOT_IGNORE_DIRS = new Set([
+  ".git",
+  ".vercel",
+  ".githooks",
+  "node_modules",
+  "shared",
+  "test",
+  "scripts"
+]);
+
+const declaredSlugs = new Set(JUEGOS.map((g) => g.slug));
+for (const entry of fs.readdirSync(ROOT, { withFileTypes: true })) {
+  if (!entry.isDirectory() || ROOT_IGNORE_DIRS.has(entry.name)) continue;
+  ok(declaredSlugs.has(entry.name), `carpeta raíz declarada en shared/games.js: ${entry.name}/`);
+}
+
+const ROOT_FILES = [
+  "AGENTS.md",
+  "CLAUDE.md",
+  "README.md",
+  "index.html",
+  "vercel.json",
+  ".editorconfig",
+  "shared/games.js",
+  "shared/theme.js",
+  "shared/chrome.css",
+  "shared/chrome.js",
+  "scripts/serve.js",
+  ".githooks/commit-msg",
+  ".githooks/pre-commit",
+  "test/shared.test.js"
+];
+
+for (const rel of ROOT_FILES) {
+  ok(fs.existsSync(path.join(ROOT, rel)), `archivo raíz existe: ${rel}`);
+}
+
 for (const juego of JUEGOS) {
   const dir = path.join(ROOT, juego.slug);
   ok(fs.existsSync(dir), `${juego.slug}/ existe`);
+  ok(fs.existsSync(path.join(dir, "index.html")), `${juego.slug}/index.html existe`);
   ok(fs.existsSync(path.join(dir, "README.md")), `${juego.slug}/README.md existe`);
-  const index = path.join(dir, "index.html");
-  ok(fs.existsSync(index), `${juego.slug}: index.html en ${path.relative(ROOT, index)}`);
-  ok(fs.existsSync(path.join(dir, "data")), `${juego.slug}: tiene datos`);
+  ok(fs.existsSync(path.join(dir, "AGENTS.md")), `${juego.slug}/AGENTS.md existe`);
+  ok(fs.existsSync(path.join(dir, "assets", "app.js")), `${juego.slug}/assets/app.js existe`);
+  ok(fs.existsSync(path.join(dir, "assets", "styles.css")), `${juego.slug}/assets/styles.css existe`);
+  ok(fs.existsSync(path.join(dir, "data")), `${juego.slug}/data/ existe`);
+  ok(fs.existsSync(path.join(dir, juego.dataFile)), `${juego.slug}/${juego.dataFile} existe`);
+  ok(fs.existsSync(path.join(dir, "test", "game.test.js")), `${juego.slug}/test/game.test.js existe`);
 }
 
-/* ---------- 2. índices: cada juego está linkeado, ningún link roto ---------- */
+/* ---------- 2. índice y assets compartidos ---------- */
 
-console.log("\n2. Índice");
+console.log("\n2. Índice y assets compartidos");
+
+const CREDIT_HTML = '<p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>';
 const htmlIndice = leer(path.join(ROOT, "index.html"));
-ok(htmlIndice.includes("shared/theme.js"), "el índice carga shared/theme.js");
-ok(htmlIndice.includes("shared/chrome.css"), "el índice carga shared/chrome.css");
-ok(htmlIndice.includes("shared/games.js"), "el índice carga shared/games.js");
-ok(htmlIndice.includes("shared/chrome.js"), "el índice carga shared/chrome.js");
-ok(htmlIndice.includes('id="gamesGrid"'), "el índice declara la grilla #gamesGrid");
-ok(htmlIndice.includes('id="introDialog"'), "el índice declara el diálogo #introDialog");
-ok(CATALOG.games.length === 9, `shared/games.js declara 9 juegos`, `encontré ${CATALOG.games.length}`);
+
+ok(/<html[^>]*\blang="es-AR"/.test(htmlIndice), 'index.html declara lang="es-AR"');
+ok(/<html[^>]*\bdata-page="hub"/.test(htmlIndice), 'index.html declara data-page="hub"');
+ok(htmlIndice.includes("shared/theme.js"), "index.html carga shared/theme.js");
+ok(htmlIndice.includes("shared/chrome.css"), "index.html carga shared/chrome.css");
+ok(htmlIndice.includes("shared/games.js"), "index.html carga shared/games.js");
+ok(htmlIndice.includes("shared/chrome.js"), "index.html carga shared/chrome.js");
+ok(htmlIndice.includes('id="gamesGrid"'), "index.html declara #gamesGrid");
+ok(htmlIndice.includes('id="introDialog"'), "index.html declara #introDialog");
+ok(htmlIndice.includes(CREDIT_HTML), "index.html tiene el footer credit exacto");
+
 for (const juego of JUEGOS) {
-  ok(fs.existsSync(path.join(ROOT, juego.indice, "index.html")), `destino del catálogo existe: ${juego.indice}`);
+  const dir = path.join(ROOT, juego.slug);
+  const html = leer(path.join(dir, "index.html"));
+
+  const scriptRefs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1]);
+  const styleRefs = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map((m) => m[1]);
+  const localRefs = [...scriptRefs, ...styleRefs].filter(
+    (ref) => !/^(https?:|data:)/.test(ref)
+  );
+
+  for (const ref of localRefs) {
+    ok(fs.existsSync(path.resolve(dir, ref)), `${juego.slug}/index.html ref responde: ${ref}`);
+  }
+
+  ok(html.includes("../shared/chrome.css"), `${juego.slug}: carga ../shared/chrome.css`);
+  ok(html.includes("../shared/chrome.js"), `${juego.slug}: carga ../shared/chrome.js`);
+
+  if (juego.darkOnly) {
+    ok(
+      /<html[^>]*\bdata-theme-mode="dark-only"/.test(html),
+      `${juego.slug}: declara data-theme-mode="dark-only"`
+    );
+  } else {
+    ok(html.includes("../shared/theme.js"), `${juego.slug}: carga ../shared/theme.js`);
+    ok(
+      !html.includes(`${juego.slug}-theme`),
+      `${juego.slug}: no usa clave inline ${juego.slug}-theme`
+    );
+  }
+
+  ok(!html.includes('id="hub-nav-style"'), `${juego.slug}: sin bloque inline #hub-nav-style`);
+  ok(!html.includes('id="hubFab"'), `${juego.slug}: sin botón #hubFab duplicado en HTML`);
+  ok(/<html[^>]*\blang="es-AR"/.test(html), `${juego.slug}: declara lang="es-AR"`);
+  ok(html.includes('rel="icon"'), `${juego.slug}: tiene favicon`);
+  ok(html.includes(CREDIT_HTML), `${juego.slug}: tiene el footer credit exacto`);
+  ok(html.includes('id="howDialog"'), `${juego.slug}: tiene diálogo #howDialog`);
+
+  const mains = (html.match(/<main\b/g) || []).length;
+  ok(mains === 1, `${juego.slug}: exactamente 1 <main>`, `encontré ${mains}`);
 }
 
-/* ---------- 3. links internos de los README ---------- */
+/* ---------- 3. links de los README y AGENTS ---------- */
 
-console.log("\n3. Links de los README");
-const readmes = [path.join(ROOT, "README.md")];
-for (const juego of JUEGOS) readmes.push(path.join(ROOT, juego.slug, "README.md"));
+console.log("\n3. Links de los README y AGENTS");
 
-for (const readme of readmes) {
-  const texto = leer(readme);
-  const rel = path.relative(ROOT, readme);
-  const dir = path.dirname(readme);
-  // links markdown relativos; los http y anclas no se validan
+const docFiles = [
+  path.join(ROOT, "README.md"),
+  path.join(ROOT, "AGENTS.md"),
+  path.join(ROOT, "CLAUDE.md")
+];
+for (const juego of JUEGOS) {
+  docFiles.push(path.join(ROOT, juego.slug, "README.md"));
+  docFiles.push(path.join(ROOT, juego.slug, "AGENTS.md"));
+}
+
+for (const docPath of docFiles) {
+  const texto = leer(docPath);
+  const rel = path.relative(ROOT, docPath);
+  const dir = path.dirname(docPath);
   const links = [...texto.matchAll(/\]\(([^)\s]+)\)/g)]
     .map((m) => m[1].split("#")[0])
     .filter((l) => l && !/^(https?:|mailto:|#)/.test(l));
+
   for (const l of links) {
-    if (!l) continue;
     ok(fs.existsSync(path.join(dir, l)), `${rel}: link ${l}`);
   }
+}
+
+const rootReadme = leer(path.join(ROOT, "README.md"));
+for (const juego of JUEGOS) {
+  ok(rootReadme.includes(`(${juego.slug}/)`), `README.md enlaza (${juego.slug}/)`);
+  const gameReadme = leer(path.join(ROOT, juego.slug, "README.md"));
+  ok(
+    gameReadme.includes("node test/game.test.js"),
+    `${juego.slug}/README.md documenta node test/game.test.js`
+  );
 }
 
 /* ---------- 4. conteos que los README afirman ---------- */
@@ -203,9 +298,10 @@ function conDatosGlobal(archivo, nombreGlobal) {
   ok(readme.includes("74") && readme.includes("244"), "hdp/README dice 74 y 244");
 }
 
-/* ---------- 5. coherencia de contenido: edad y servidor ---------- */
+/* ---------- 5. coherencia de contenido ---------- */
 
 console.log("\n5. Coherencia de contenido");
+const readmes = [path.join(ROOT, "README.md"), ...JUEGOS.map((g) => path.join(ROOT, g.slug, "README.md"))];
 const todosLosReadmes = readmes.map((r) => [path.relative(ROOT, r), leer(r)]);
 
 // las etiquetas de intensidad no llevan edad (decisión del repo)
@@ -217,19 +313,26 @@ for (const [rel, texto] of todosLosReadmes) {
      sospechosas[0] && sospechosas[0].trim().slice(0, 60));
 }
 
-// HDP no tiene servidor: que ningún README lo mande a correr node
+// HDP no tiene servidor: que ningún README lo mande a correr node server.js
 for (const [rel, texto] of todosLosReadmes) {
   ok(!/node\s+(hdp\/)?server\.js/.test(texto), `${rel}: no manda a correr server.js`);
 }
 
-// el README raíz declara la URL pública
-{
-  const root = leer(path.join(ROOT, "README.md"));
-  ok(/https:\/\/juegos-de-mesa-seven\.vercel\.app/.test(root), "README raíz publica la URL del sitio");
-  ok(/push a `main`/.test(root), "README raíz explica que el push despliega");
+// Ningún juego publicado dice "no se publica"
+for (const juego of JUEGOS) {
+  const htmlPath = path.join(ROOT, juego.slug, "index.html");
+  const readmePath = path.join(ROOT, juego.slug, "README.md");
+  ok(!/no se publica/i.test(leer(htmlPath)), `${juego.slug}/index.html: sin texto "no se publica"`);
+  ok(!/no se publica/i.test(leer(readmePath)), `${juego.slug}/README.md: sin texto "no se publica"`);
 }
 
-/* ---------- 6. el código compila ---------- */
+// el README raíz declara la URL pública
+{
+  ok(/https:\/\/juegos-de-mesa-seven\.vercel\.app/.test(rootReadme), "README raíz publica la URL del sitio");
+  ok(/push a `main`/.test(rootReadme), "README raíz explica que el push despliega");
+}
+
+/* ---------- 6. sintaxis JS ---------- */
 
 console.log("\n6. Sintaxis");
 function jsFiles(dir, acc = []) {
@@ -241,10 +344,10 @@ function jsFiles(dir, acc = []) {
   }
   return acc;
 }
-const archivos = jsFiles(ROOT);
+const archivos = [...jsFiles(ROOT), path.join(ROOT, ".githooks", "commit-msg")];
 for (const f of archivos) {
   try {
-    execSync(`node --check "${f}"`, { stdio: "pipe" });
+    execFileSync(process.execPath, ["--check", f], { stdio: "pipe" });
     chequeos++;
   } catch (e) {
     fallas++;
@@ -252,6 +355,26 @@ for (const f of archivos) {
   }
 }
 console.log(`  ${archivos.length} archivos .js revisados`);
+
+/* ---------- 7. suites de tests ---------- */
+
+console.log("\n7. Suites de tests");
+const suites = [
+  path.join(ROOT, "test", "shared.test.js"),
+  ...JUEGOS.map((g) => path.join(ROOT, g.slug, "test", "game.test.js"))
+];
+
+for (const suite of suites) {
+  const rel = path.relative(ROOT, suite);
+  try {
+    execFileSync(process.execPath, [suite], { stdio: "pipe", encoding: "utf8" });
+    ok(true, `suite ${rel}`);
+    console.log(`  ok   ${rel}`);
+  } catch (e) {
+    const out = [e.stdout, e.stderr].filter(Boolean).join("\n").trim();
+    ok(false, `suite ${rel}`, out.split("\n").slice(-3).join(" | "));
+  }
+}
 
 /* ---------- resumen ---------- */
 
