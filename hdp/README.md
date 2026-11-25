@@ -26,10 +26,10 @@ Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no dep
 
 ## Cómo funciona
 
-- **`public/assets/engine.js`**: el motor del juego (mazos, turnos, puntajes, validaciones). Corre en el navegador del host.
-- **`public/assets/net.js`**: WebRTC. Cada jugador tiene su propio data channel contra el host; el host difunde el estado.
-- **`public/assets/local.js`**: traduce las viejas llamadas `/api/...` a acciones del motor, así la interfaz no cambia.
-- **`public/assets/app.js`**: la interfaz.
+- **`assets/engine.js`**: el motor del juego (mazos, turnos, puntajes, validaciones). Corre en el navegador del host.
+- **`assets/net.js`**: WebRTC. Cada jugador tiene su propio data channel contra el host; el host difunde el estado.
+- **`assets/local.js`**: traduce las viejas llamadas `/api/...` a acciones del motor, así la interfaz no cambia.
+- **`assets/app.js`**: la interfaz.
 - **`test/engine.test.js`**: pruebas del motor, sin dependencias.
 
 Los data channels no piden contexto seguro, así que funciona igual sobre `http://` en la red local que sobre el sitio publicado en `https://`.
@@ -45,6 +45,6 @@ Los data channels no piden contexto seguro, así que funciona igual sobre `http:
 
 ## El mazo
 
-- `public/assets/cards.js`: las cartas. `BLACK` son las frases (con `pick` 1 o 2 para la cantidad de blancas) y `WHITE` las respuestas. Se puede agregar contenido ahí sin tocar el resto.
+- `data/cards.js`: las cartas. `BLACK` son las frases (con `pick` 1 o 2 para la cantidad de blancas) y `WHITE` las respuestas. Se puede agregar contenido ahí sin tocar el resto.
 
 La idea de fondo: reírse de todo un rato, sin que nadie termine ofendido en serio.

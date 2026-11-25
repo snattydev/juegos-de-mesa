@@ -49,7 +49,7 @@ const JUEGOS = [
   { slug: "mas-probable", indice: "mas-probable/" },
   { slug: "incomodometro", indice: "incomodometro/" },
   { slug: "despues-de-las-doce", indice: "despues-de-las-doce/" },
-  { slug: "hdp", indice: "hdp/public/" },
+  { slug: "hdp", indice: "hdp/" },
 ];
 
 /* ---------- 1. estructura ---------- */
@@ -59,11 +59,9 @@ for (const juego of JUEGOS) {
   const dir = path.join(ROOT, juego.slug);
   ok(fs.existsSync(dir), `${juego.slug}/ existe`);
   ok(fs.existsSync(path.join(dir, "README.md")), `${juego.slug}/README.md existe`);
-  // HDP sirve public/ como raíz; el resto tiene el index en la carpeta
-  const index = juego.slug === "hdp" ? path.join(dir, "public", "index.html") : path.join(dir, "index.html");
+  const index = path.join(dir, "index.html");
   ok(fs.existsSync(index), `${juego.slug}: index.html en ${path.relative(ROOT, index)}`);
-  ok(fs.existsSync(path.join(dir, "data")) || fs.existsSync(path.join(dir, "public", "assets", "cards.js")),
-     `${juego.slug}: tiene datos`);
+  ok(fs.existsSync(path.join(dir, "data")), `${juego.slug}: tiene datos`);
 }
 
 /* ---------- 2. índices: cada juego está linkeado, ningún link roto ---------- */
@@ -210,7 +208,7 @@ function conDatosGlobal(archivo, nombreGlobal) {
 
 // hdp: 74 negras y 244 blancas
 {
-  const cards = require(path.join(ROOT, "hdp", "public", "assets", "cards.js"));
+  const cards = require(path.join(ROOT, "hdp", "data", "cards.js"));
   ok(cards.BLACK.length === 74, "hdp: 74 negras", `encontré ${cards.BLACK.length}`);
   ok(cards.WHITE.length === 244, "hdp: 244 blancas", `encontré ${cards.WHITE.length}`);
   const readme = leer(path.join(ROOT, "hdp", "README.md"));

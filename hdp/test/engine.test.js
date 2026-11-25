@@ -1,6 +1,6 @@
 "use strict";
 // Partida completa contra el motor puro: lobby → jugar → juzgar → revelar → fin.
-const E = require("../public/assets/engine.js");
+const E = require("../assets/engine.js");
 
 let checks = 0, fails = 0;
 function ok(name, cond, extra) {

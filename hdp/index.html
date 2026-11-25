@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR" data-theme-mode="dark-only">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -51,7 +51,7 @@
       </section>
 
       <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
-      <p class="home-note">Un celular o una compu hace de mesa; el resto entra desde su celular por la misma red WiFi.</p>
+      <p class="home-note">Un celular hace de mesa y el resto entra con un código, sin servidor ni cuentas.</p>
       <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
     </main>
 
@@ -59,15 +59,6 @@
     <section class="view" id="viewLobby" hidden>
       <p class="kicker">Sala</p>
       <h2 class="view-title">Que entren todos</h2>
-
-      <div class="code-panel" hidden>
-        <p class="code" id="lobbyCode" aria-label="Código de la sala">XXXX</p>
-        <div class="code-actions">
-          <button class="btn btn-ghost" id="copyBtn" type="button">Copiar</button>
-          <button class="btn btn-ghost" id="shareBtn" type="button">Compartir</button>
-        </div>
-        <p class="code-hint">Entran por <span class="mono" id="lobbyUrl"></span> con ese código.</p>
-      </div>
 
       <div class="net-panel" id="hostPanel" hidden>
         <h3 class="panel-title">Sumar jugadores</h3>
@@ -178,7 +169,7 @@
     </div>
   </dialog>
 
-  <script src="assets/cards.js"></script>
+  <script src="data/cards.js"></script>
   <script src="assets/engine.js"></script>
   <script src="assets/net.js"></script>
   <script src="assets/local.js"></script>

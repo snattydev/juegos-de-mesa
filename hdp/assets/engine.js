@@ -1,15 +1,15 @@
 "use strict";
 
 /*
- * Motor de HDP. Corre igual en Node (para los tests y el server opcional) y en
- * el navegador del host cuando se juega P2P por WebRTC.
+ * Motor de HDP. Corre igual en Node (para los tests) y en el navegador del
+ * host cuando se juega P2P por WebRTC.
  *
  * No toca red ni disco: recibe acciones y devuelve estado. El transporte vive
  * afuera, en net.js (data channels del host).
  */
 (function (root, factory) {
   if (typeof module === "object" && module.exports) {
-    module.exports = factory(require("./cards"));
+    module.exports = factory(require("../data/cards.js"));
   } else {
     root.HDP_ENGINE = factory(root.HDP_CARDS);
   }

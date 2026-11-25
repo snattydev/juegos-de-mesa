@@ -290,43 +290,6 @@ button { font-family: inherit; color: inherit; }
 
 /* ---------- Lobby ---------- */
 
-.code-panel {
-  margin-top: 20px;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  background: var(--surface);
-  text-align: center;
-}
-
-.code {
-  margin: 0;
-  font-family: "Fraunces", Georgia, serif;
-  font-weight: 600;
-  font-size: clamp(3.4rem, 18vw, 6rem);
-  letter-spacing: 0.14em;
-  line-height: 1;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.code-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 16px;
-}
-
-.code-actions .btn { min-height: 44px; padding: 10px 20px; }
-
-.code-hint {
-  margin: 14px 0 0;
-  font-size: 0.78rem;
-  color: var(--muted);
-}
-
-.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
-
 .players-panel {
   margin-top: 18px;
   padding: 18px 20px;

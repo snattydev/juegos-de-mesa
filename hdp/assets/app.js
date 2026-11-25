@@ -29,10 +29,6 @@
     howDialog: document.getElementById("howDialog"),
     closeHowBtn: document.getElementById("closeHowBtn"),
 
-    lobbyCode: document.getElementById("lobbyCode"),
-    lobbyUrl: document.getElementById("lobbyUrl"),
-    copyBtn: document.getElementById("copyBtn"),
-    shareBtn: document.getElementById("shareBtn"),
     playerCount: document.getElementById("playerCount"),
     playersList: document.getElementById("playersList"),
     lobbyHost: document.getElementById("lobbyHost"),
@@ -76,8 +72,6 @@
   var snapshot = null;
   var selected = []; // ids de cartas blancas elegidas
   var roundKey = null; // para resetear la selección en cada ronda
-  var es = null;
-  var pollTimer = null;
   var toastTimer = null;
 
   /* ---------- Sesión (localStorage) ---------- */
@@ -130,29 +124,7 @@
     else el.connText.textContent = "Sin conexión";
   }
 
-  function startPolling() {
-    if (pollTimer) return;
-    pollOnce();
-    pollTimer = setInterval(pollOnce, 3000);
-  }
-
-  function stopPolling() {
-    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-  }
-
-  function pollOnce() {
-    if (!session) return;
-    authed("/api/state")
-      .then(function (snap) {
-        applySnapshot(snap);
-        setConn("online");
-      })
-      .catch(function () { setConn("offline"); });
-  }
-
   function connect() {
-    stopPolling();
-    if (es) { es.close(); es = null; }
     setConn("connecting");
     HDP_BACKEND.subscribe(function (snap) {
       if (!snap) return;
@@ -201,9 +173,6 @@
   }
 
   function renderLobby() {
-    el.lobbyCode.textContent = snapshot.code;
-    el.lobbyUrl.textContent = window.location.origin + "/";
-
     var players = snapshot.players;
     el.playerCount.textContent = String(players.length);
     el.playersList.innerHTML = "";
@@ -500,8 +469,6 @@
   }
 
   function goHome() {
-    if (es) { es.close(); es = null; }
-    stopPolling();
     hideNetPanel();
     if (window.HDP_BACKEND) HDP_BACKEND.reset();
     clearSession();
@@ -510,7 +477,7 @@
     show("home");
   }
 
-  /* ---------- Copiar / compartir ---------- */
+  /* ---------- Copiar ---------- */
   function fallbackCopy(text, ok, fail) {
     var ta = document.createElement("textarea");
     ta.value = text;
@@ -526,31 +493,6 @@
       fail(e);
     }
     document.body.removeChild(ta);
-  }
-
-  function copyCode() {
-    var text = snapshot.code;
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(
-        function () { toast("Código copiado", "ok"); },
-        function () { fallbackCopy(text, function () { toast("Código copiado", "ok"); }, function () { toast("No se pudo copiar", "error"); }); }
-      );
-    } else {
-      fallbackCopy(text, function () { toast("Código copiado", "ok"); }, function () { toast("No se pudo copiar", "error"); });
-    }
-  }
-
-  function shareCode() {
-    var text = "Jugamos a HDP. Entrá a " + window.location.origin + " y poné el código " + snapshot.code;
-    if (navigator.share) {
-      navigator.share({ title: "HDP", text: text }).catch(function () {});
-    } else {
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(function () { toast("Invitación copiada", "ok"); });
-      } else {
-        fallbackCopy(text, function () { toast("Invitación copiada", "ok"); }, function () {});
-      }
-    }
   }
 
   /* ---------- Eventos ---------- */
@@ -657,9 +599,6 @@
   el.rematchBtn.addEventListener("click", function () {
     authed("/api/restart").catch(function (e) { toast(e.message, "error"); });
   });
-
-  el.copyBtn.addEventListener("click", copyCode);
-  el.shareBtn.addEventListener("click", shareCode);
 
   el.howBtn.addEventListener("click", function () {
     if (typeof el.howDialog.showModal === "function") el.howDialog.showModal();
