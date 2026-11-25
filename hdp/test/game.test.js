@@ -1,5 +1,6 @@
 "use strict";
-// Partida completa contra el motor puro: lobby → jugar → juzgar → revelar → fin.
+// Pruebas de contenido y motor de HDP: node test/game.test.js
+const C = require("../data/cards.js");
 const E = require("../assets/engine.js");
 
 let checks = 0, fails = 0;
@@ -9,14 +10,58 @@ function ok(name, cond, extra) {
   else console.log("✓ " + name);
 }
 
+function normalize(text) {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Contenido del mazo
+ok("74 cartas negras", Array.isArray(C.BLACK) && C.BLACK.length === 74, String(C.BLACK && C.BLACK.length));
+ok("244 cartas blancas", Array.isArray(C.WHITE) && C.WHITE.length === 244, String(C.WHITE && C.WHITE.length));
+
+const badBlack = C.BLACK.filter((card) => {
+  if (!card || typeof card.text !== "string" || card.text.trim() === "") return true;
+  const blanks = (card.text.match(/___/g) || []).length;
+  return blanks < 1 || blanks !== card.pick;
+});
+ok("cada carta negra tiene pick igual a la cantidad de ___", badBlack.length === 0, String(badBlack.length));
+
+const badWhite = C.WHITE.filter((text) => typeof text !== "string" || text.trim() === "");
+ok("todas las cartas blancas son texto no vacío", badWhite.length === 0, String(badWhite.length));
+
+const blackSeen = new Set();
+const blackDups = C.BLACK.filter((card) => {
+  const key = normalize(card.text);
+  if (blackSeen.has(key)) return true;
+  blackSeen.add(key);
+  return false;
+});
+ok("cero duplicados en cartas negras", blackDups.length === 0, String(blackDups.length));
+
+const whiteSeen = new Set();
+const whiteDups = C.WHITE.filter((text) => {
+  const key = normalize(text);
+  if (whiteSeen.has(key)) return true;
+  whiteSeen.add(key);
+  return false;
+});
+ok("cero duplicados en cartas blancas", whiteDups.length === 0, String(whiteDups.length));
+
+// Motor puro: lobby → jugar → juzgar → revelar → fin
 const { room, token: host } = E.createRoom("Host");
 ok("sala creada", room && room.code.length === 4, room && room.code);
 ok("host conectado", room.players.get(host).connected === true);
 
 const a = E.addPlayer(room, "Ana");
+ok("no arranca con 2", !!E.apply(room, host, "start").error);
+
 const b = E.addPlayer(room, "Beto");
 ok("dos jugadores más", !!a.token && !!b.token);
-ok("no arranca con 3", E.apply(room, host, "start").ok === true);
+ok("arranca con 3", E.apply(room, host, "start").ok === true);
 
 const snapHost = E.snapshotFor(room, host);
 ok("fase playing", snapHost.phase === "playing");
@@ -75,7 +120,7 @@ const fin = E.snapshotFor(room, host);
 ok("llegó a ended", fin.phase === "ended", fin.phase);
 ok("scores ordenados", Array.isArray(fin.scores) && fin.scores.length === 3, JSON.stringify(fin.scores));
 ok("alguien llegó al target", fin.scores[0].score >= room.targetScore, JSON.stringify(fin.scores[0]));
-ok("revncha vuelve a lobby", E.apply(room, host, "restart").ok === true && E.snapshotFor(room, host).phase === "lobby");
+ok("revancha vuelve a lobby", E.apply(room, host, "restart").ok === true && E.snapshotFor(room, host).phase === "lobby");
 ok("scores en cero", E.snapshotFor(room, host).players.every(p => p.score === 0));
 ok("settings fuera de rango rechazado", !!E.apply(room, host, "settings", { targetScore: 99 }).error);
 ok("jugador puede salir", E.removePlayer(room, b.token).ok === true);

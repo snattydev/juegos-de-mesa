@@ -2,7 +2,7 @@
 
 /*
  * Lógica pura de la rueda y de los mazos.
- * Sin DOM: así se puede probar con node (ver test/run-tests.js).
+ * Sin DOM: así se puede probar con node (ver test/game.test.js).
  */
 (function (root, factory) {
   var api = factory();

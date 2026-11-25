@@ -1,12 +1,14 @@
 "use strict";
 
-// Validación del mazo de «Después de las doce».
-// Corre con: node test/validate.js  (sin dependencias)
+// Validación del mazo y la lógica pura de «Después de las doce».
+// Corre con: node test/game.test.js  (sin dependencias)
 
 global.window = {};
 require("../data/cards.js");
+require("../assets/app.js");
 
 const data = global.window.DESPUES_DATA;
+const logic = global.window.DESPUES_LOGIC;
 const cards = data.cards;
 const finalCards = data.finalCards;
 
@@ -133,6 +135,45 @@ const groupMechanics =
     leaked.map((c) => c.text).join(" | ")
   );
 });
+
+// 9. Lógica pura (DESPUES_LOGIC)
+check("DESPUES_LOGIC expone funciones puras", Boolean(logic && typeof logic.filterCards === "function"));
+
+INTENSITIES.forEach((intensity) => {
+  const duoDeck = logic.filterCards(cards, "duo", intensity);
+  const groupDeck = logic.filterCards(cards, "group", intensity);
+  check(
+    "filterCards duo/" + intensity + " solo incluye solo o ambos",
+    duoDeck.length > 0 && duoDeck.every((c) => c.intensity === intensity && (c.audience === "solo" || c.audience === "ambos"))
+  );
+  check(
+    "filterCards group/" + intensity + " solo incluye grupo o ambos",
+    groupDeck.length > 0 && groupDeck.every((c) => c.intensity === intensity && (c.audience === "grupo" || c.audience === "ambos"))
+  );
+});
+
+check("nextTension suma 10 en cumplida y hace tope en 100", (
+  logic.nextTension(0, "cumplida") === 10 &&
+  logic.nextTension(95, "cumplida") === 100 &&
+  logic.nextTension(40, "pasala") === 40 &&
+  logic.nextTension(40, "otra") === 40
+));
+
+const finalPreviaDuo = logic.finalCardFor(finalCards, "previa", "duo");
+const finalPreviaGroup = logic.finalCardFor(finalCards, "previa", "group");
+check(
+  "finalCardFor elige la variante según el modo",
+  Boolean(finalPreviaDuo && finalPreviaGroup && finalPreviaDuo.text === finalCards.previa.solo && finalPreviaGroup.text === finalCards.previa.grupo)
+);
+
+const sample = [1, 2, 3, 4, 5];
+const sampleBefore = sample.slice();
+const shuffled = logic.shuffle(sample, () => 0.42);
+check(
+  "shuffle no muta el original y conserva los elementos",
+  sample.join(",") === sampleBefore.join(",") &&
+  shuffled.slice().sort().join(",") === sampleBefore.slice().sort().join(",")
+);
 
 console.log("\n" + checks + " chequeos, " + failures + " fallas.");
 

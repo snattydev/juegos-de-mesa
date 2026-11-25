@@ -1,6 +1,6 @@
 "use strict";
 
-// Verificación sin dependencias: node tests/check.js
+// Verificación sin dependencias: node test/game.test.js
 // Carga statements.js y app.js en un contexto aislado (sin DOM), valida el
 // contenido y simula partidas completas del mazo.
 

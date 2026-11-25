@@ -2,7 +2,7 @@
 
 /*
  * Pruebas de contenido y de lógica pura. Sin dependencias.
- *   node test/run-tests.js
+ *   node test/game.test.js
  */
 
 const fs = require("node:fs");

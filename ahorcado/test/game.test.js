@@ -2,7 +2,7 @@
 
 /*
  * Pruebas de contenido y de reglas del Ahorcado. Sin dependencias.
- *   node test/run-tests.js
+ *   node test/game.test.js
  */
 
 const fs = require("node:fs");
