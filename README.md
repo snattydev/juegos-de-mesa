@@ -26,16 +26,32 @@ El repo también es público: lo que se commitea se ve en GitHub.
 
 ## Convenciones
 
-Cada juego vive en su carpeta y es independiente: `index.html`, `assets/app.js`, `assets/styles.css`, `data/*.js`, más `README.md` con sus decisiones. Sin dependencias, sin build, sin cuentas, sin métricas. Los textos de interfaz van en español rioplatense.
+Cada juego vive en su carpeta y comparte catálogo, tema y navegación desde `shared/` (`games.js`, `theme.js`, `chrome.css`, `chrome.js`): `index.html`, `assets/app.js`, `assets/styles.css`, `data/*.js`, `test/game.test.js`, `README.md` y `AGENTS.md`. Sin dependencias, sin build, sin cuentas, sin métricas. Los textos de interfaz van en español rioplatense.
+
+Para desarrollar o sumar un juego nuevo, leé [AGENTS.md](AGENTS.md) (y [CLAUDE.md](CLAUDE.md)).
 
 HDP juega entre varios celulares sin servidor: el que crea la sala hace de mesa y el resto se conecta con un código. Funciona en la misma red o a distancia, mientras el código se pueda pasar por mensaje.
 
 Humor adulto: HDP, Yo Nunca y La Botella suben el tono en sus niveles más altos, con insinuación y sin explicitud. Después de las doce es el único que avisa que es para adultos, y lo hace en la intro del índice antes de entrar. Se juega con reglas de la casa: todo es oferta, se puede pasar y hay palabra de corte.
 
-## Chequeos
+## Desarrollo local y chequeos
+
+Para servir todo el sitio en local (y desde el celular en la misma red):
+
+```sh
+node scripts/serve.js 8080
+```
+
+Para activar los hooks de Conventional Commits y validación pre-commit:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Para correr todos los chequeos de coherencia, sintaxis y suites del repo:
 
 ```sh
 node test/checks.js
 ```
 
-Valida la estructura del repo, que los links del índice y de los README respondan, que los conteos que afirman los README coincidan con el código, y la sintaxis de todos los `.js`. Cada juego tiene además su propia suite, indicada en su README.
+Valida la estructura del repo, que los assets compartidos y los links del índice y de los `README`/`AGENTS` respondan, que los conteos que afirman los README coincidan con el código, la sintaxis de todos los `.js`, [test/shared.test.js](test/shared.test.js) y la suite `test/game.test.js` de cada uno de los nueve juegos.

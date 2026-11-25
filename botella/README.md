@@ -18,6 +18,7 @@ Son tres mazos de 45 preguntas, uno por intensidad.
 ```
 botella/
 ├── index.html          vistas: inicio, juego, diálogo "Cómo se juega"
+├── AGENTS.md           convenciones para editarlo
 ├── assets/
 │   ├── app.js          estado del juego, DOM, animación del giro
 │   ├── styles.css      todo el estilo, mobile-first
@@ -25,13 +26,13 @@ botella/
 ├── data/
 │   └── questions.js    window.BOTELLA_DECKS (tres mazos de 45)
 └── test/
-    └── run-tests.js    pruebas de contenido y de lógica
+    └── game.test.js    pruebas de contenido y de lógica
 ```
 
 ## Pruebas
 
 ```bash
-node test/run-tests.js
+node test/game.test.js
 ```
 
 Valida que cada mazo tiene 45 preguntas, que no hay repetidas dentro ni entre mazos, que `pickSector` devuelve índices válidos para 2 a 12 jugadores y que la rotación calculada deja el sector elegido exactamente bajo el puntero.

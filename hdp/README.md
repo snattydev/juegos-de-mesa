@@ -30,7 +30,8 @@ Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no dep
 - **`assets/net.js`**: WebRTC. Cada jugador tiene su propio data channel contra el host; el host difunde el estado.
 - **`assets/local.js`**: traduce las viejas llamadas `/api/...` a acciones del motor, así la interfaz no cambia.
 - **`assets/app.js`**: la interfaz.
-- **`test/engine.test.js`**: pruebas del motor, sin dependencias.
+- **`AGENTS.md`**: convenciones para editarlo.
+- **`test/game.test.js`**: pruebas del mazo y del motor, sin dependencias.
 
 Los data channels no piden contexto seguro, así que funciona igual sobre `http://` en la red local que sobre el sitio publicado en `https://`.
 
@@ -48,3 +49,9 @@ Los data channels no piden contexto seguro, así que funciona igual sobre `http:
 - `data/cards.js`: las cartas. `BLACK` son las frases (con `pick` 1 o 2 para la cantidad de blancas) y `WHITE` las respuestas. Se puede agregar contenido ahí sin tocar el resto.
 
 La idea de fondo: reírse de todo un rato, sin que nadie termine ofendido en serio.
+
+## Verificación
+
+```sh
+node test/game.test.js
+```

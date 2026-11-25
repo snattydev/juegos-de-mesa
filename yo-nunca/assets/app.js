@@ -68,7 +68,7 @@
 
   window.YO_NUNCA_CORE = { LEVELS: LEVELS, buildDeck: buildDeck, createRun: createRun, shuffle: shuffle };
 
-  // En Node (tests/check.js) no hay DOM: la lógica del mazo ya quedó exportada.
+  // En Node (test/game.test.js) no hay DOM: la lógica del mazo ya quedó exportada.
   if (typeof document === "undefined") return;
 
   const NS = "http://www.w3.org/2000/svg";

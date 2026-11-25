@@ -48,3 +48,18 @@ Está publicado junto al resto del sitio, o se abre `index.html` desde el disco.
 - **Sin duplicados** en todo el mazo; cada carta se lee sola, sin plantillas.
 - **La carta final respeta el modo**: hay una versión para pareja y otra para grupo, porque "elegí a alguien" no se puede cumplir jugando de a dos.
 - **Nombres del grupo** persistidos en `localStorage`, borrables en cualquier momento.
+
+## Estructura
+
+- `index.html`: vistas (setup, juego, cierre) y diálogos.
+- `AGENTS.md`: convenciones para editarlo.
+- `assets/app.js`: estado, flujo de cartas y lógica pura (`window.DESPUES_LOGIC`).
+- `assets/styles.css`: paleta nocturna fija y diseño mobile-first.
+- `data/cards.js`: 216 cartas y cartas finales en `window.DESPUES_DATA`.
+- `test/game.test.js`: validación de mazo, audiencias y lógica pura.
+
+## Verificación
+
+```sh
+node test/game.test.js
+```

@@ -24,6 +24,7 @@ Las palabras van en mayúsculas, sin tildes, espacios ni guiones: el teclado es 
 ```
 ahorcado/
 ├── index.html          vistas: inicio, partida, diálogo "Cómo se juega"
+├── AGENTS.md           convenciones para editarlo
 ├── assets/
 │   ├── app.js          estado, DOM, racha y récord en localStorage
 │   ├── rules.js        reglas puras: rondas, aciertos, errores, destape
@@ -31,13 +32,13 @@ ahorcado/
 ├── data/
 │   └── words.js        window.AHORCADO_DATA (cuatro mazos de 40 + Mezcla)
 └── test/
-    └── run-tests.js    contenido y reglas
+    └── game.test.js    contenido y reglas
 ```
 
 ## Pruebas
 
 ```bash
-node test/run-tests.js
+node test/game.test.js
 ```
 
 Valida que cada mazo tenga 40 palabras, que no haya repetidas dentro ni entre mazos, que cada palabra se pueda escribir con el teclado del juego, y las reglas: la Ñ como letra aparte, seis errores para perder, el destape final y que una ronda terminada no acepte más letras.
@@ -47,4 +48,4 @@ Valida que cada mazo tenga 40 palabras, que no haya repetidas dentro ni entre ma
 - `rules.js` no toca el DOM: se exporta como módulo para los tests y como global para la página.
 - El tamaño de la palabra se calcula según el ancho de la pantalla para que entre entera, incluso con las palabras largas de doce letras.
 - Teclado físico para probar en la compu: cualquier letra juega, `Esc` vuelve al inicio.
-- `prefers-reduced-motion` desactiva animaciones y el tema claro/oscuro se guarda por juego.
+- `prefers-reduced-motion` desactiva animaciones y el tema claro/oscuro se sincroniza desde `../shared/theme.js` y `../shared/chrome.js`.

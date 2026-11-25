@@ -25,6 +25,7 @@ Son 100 consignas: 100 rondas como máximo.
 ## Estructura
 
 - `index.html`: las seis vistas (inicio, consigna, intersticial, votación, revelado y ranking) y el diálogo "Cómo se juega".
+- `AGENTS.md`: convenciones para editarlo.
 - `assets/app.js`: estado de la partida, DOM y la lógica pura de conteo (`window.MAS_PROBABLE_LOGIC`).
 - `assets/styles.css`: todo el estilo, mobile-first, con variables CSS.
 - `data/prompts.js`: las 100 consignas en `window.MAS_PROBABLE_DATA`.

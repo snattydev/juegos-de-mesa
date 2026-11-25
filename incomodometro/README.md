@@ -27,6 +27,7 @@ Son 80 situaciones: 80 rondas como máximo.
 ## Estructura
 
 - `index.html`: las seis vistas (inicio, situación, intersticial, votación, revelado con termómetro y ranking) y el diálogo "Cómo se juega".
+- `AGENTS.md`: convenciones para editarlo.
 - `assets/app.js`: estado de la partida, DOM y la lógica pura de conteo y termómetro (`window.INCOMODOMETRO_LOGIC`).
 - `assets/styles.css`: todo el estilo, mobile-first, con variables CSS.
 - `data/prompts.js`: las 80 situaciones en `window.INCOMODOMETRO_DATA`.

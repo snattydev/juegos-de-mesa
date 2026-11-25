@@ -29,19 +29,20 @@ Cada nivel tiene 120 frases únicas y completas. Los temas están separados a pr
 ```
 yo-nunca/
 ├── index.html          vistas de inicio, partida y cierre + diálogo
+├── AGENTS.md           convenciones para editarlo
 ├── assets/
 │   ├── app.js          estado, mazo y DOM
 │   └── styles.css      todo el estilo
 ├── data/
 │   └── statements.js   360 frases en window.YO_NUNCA_DATA
-└── tests/
-    └── check.js        verificación con Node, sin dependencias
+└── test/
+    └── game.test.js    verificación con Node, sin dependencias
 ```
 
 ## Verificación
 
 ```sh
-node tests/check.js
+node test/game.test.js
 ```
 
 El test carga `statements.js` y `app.js` en un contexto de Node sin DOM, valida 3 × 120 frases únicas (sin duplicados entre niveles ni placeholders) y simula 60 partidas completas para comprobar que el mazo barajado no repite cartas.

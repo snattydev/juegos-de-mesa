@@ -30,10 +30,11 @@ La referencia es la postura neutra al arrancar la ronda: 42° de inclinación di
 ```
 charadas/
 ├── index.html          vistas: inicio, juego, fin, cuenta regresiva, diálogo
-├── assets/app.js       estado, timer, sensor, récords, Wake Lock
+├── AGENTS.md           convenciones para editarlo
+├── assets/app.js       estado, timer, sensor, récords, Wake Lock y CharadasCore
 ├── assets/styles.css   estilos, temas claro/oscuro, mobile-first
 ├── data/words.js       contenido
-└── AGENTS.md           convenciones para editarlo
+└── test/game.test.js   pruebas de contenido, mazo y sensor
 ```
 
 ## Detalles técnicos
@@ -48,6 +49,5 @@ charadas/
 ## Verificación
 
 ```bash
-node --check assets/app.js
-node --check data/words.js
+node test/game.test.js
 ```
