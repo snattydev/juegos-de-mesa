@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("node:fs");
+
+const msgFile = process.argv[2];
+if (!msgFile) {
+  console.error("Uso: commit-msg <ruta-al-mensaje>");
+  process.exit(1);
+}
+
+const raw = fs.readFileSync(msgFile, "utf8");
+const subject = raw
+  .split(/\r?\n/)
+  .map((line) => line.trim())
+  .find((line) => line.length > 0 && !line.startsWith("#"));
+
+if (!subject) {
+  console.error("Error: el mensaje de commit está vacío.");
+  process.exit(1);
+}
+
+if (/^(Merge |Revert "|fixup! |squash! )/.test(subject)) {
+  process.exit(0);
+}
+
+const CONVENTIONAL_RE =
+  /^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: \S.{1,99}$/;
+
+if (!CONVENTIONAL_RE.test(subject)) {
+  console.error("");
+  console.error("Commit rechazado: el título debe seguir Conventional Commits.");
+  console.error("Commit rejected: subject must follow Conventional Commits.");
+  console.error("");
+  console.error("  Formato / Format: <type>(<scope>): <description>");
+  console.error("  Tipos / Types:    feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert");
+  console.error("  Ejemplo / Ex.:    feat(truco): add 40-card deck and round scoring");
+  console.error("");
+  console.error(`  Recibido / Got:   ${subject}`);
+  console.error("");
+  process.exit(1);
+}

@@ -3,6 +3,10 @@
 **/tests/
 **/README.md
 **/AGENTS.md
+**/CLAUDE.md
+.githooks/
+scripts/
+.editorconfig
 .hermes/
 .vercel/
 .env*
