@@ -4,6 +4,7 @@
 **/README.md
 **/AGENTS.md
 **/CLAUDE.md
+CONTRIBUTING.md
 .githooks/
 scripts/
 .editorconfig

@@ -28,7 +28,7 @@ El repo también es público: lo que se commitea se ve en GitHub.
 
 Cada juego vive en su carpeta y comparte catálogo, tema y navegación desde `shared/` (`games.js`, `theme.js`, `chrome.css`, `chrome.js`): `index.html`, `assets/app.js`, `assets/styles.css`, `data/*.js`, `test/game.test.js`, `README.md` y `AGENTS.md`. Sin dependencias, sin build, sin cuentas, sin métricas. Los textos de interfaz van en español rioplatense.
 
-Para desarrollar o sumar un juego nuevo, leé [AGENTS.md](AGENTS.md) (y [CLAUDE.md](CLAUDE.md)).
+Para desarrollar, vibecodear o sumar un juego nuevo, mirá [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) y [CLAUDE.md](CLAUDE.md).
 
 HDP juega entre varios celulares sin servidor: el que crea la sala hace de mesa y el resto se conecta con un código. Funciona en la misma red o a distancia, mientras el código se pueda pasar por mensaje.
 

@@ -63,6 +63,7 @@ for (const entry of fs.readdirSync(ROOT, { withFileTypes: true })) {
 const ROOT_FILES = [
   "AGENTS.md",
   "CLAUDE.md",
+  "CONTRIBUTING.md",
   "README.md",
   "index.html",
   "vercel.json",
@@ -158,6 +159,7 @@ console.log("\n3. Links de los README y AGENTS");
 
 const docFiles = [
   path.join(ROOT, "README.md"),
+  path.join(ROOT, "CONTRIBUTING.md"),
   path.join(ROOT, "AGENTS.md"),
   path.join(ROOT, "CLAUDE.md")
 ];
