@@ -736,7 +736,7 @@
 
   document.addEventListener("keydown", function (event) {
     if (viewGame.hidden) return;
-    if (howDialog.open) return;
+    if (howDialog.open || document.querySelector("dialog[open]")) return;
 
     const onPlayer = Boolean(event.target && event.target.closest && event.target.closest(".player"));
 

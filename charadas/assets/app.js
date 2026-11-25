@@ -1,14 +1,18 @@
 (function (global) {
   "use strict";
 
+  const TILT_THRESHOLD = 42;
+  const TILT_RELEASE = 12;
+
   /**
    * Fisher-Yates sobre una copia: el mazo original nunca se toca.
    * Queda expuesto para poder testearlo desde Node sin DOM.
    */
-  function shuffle(items) {
+  function shuffle(items, random) {
+    const rnd = typeof random === "function" ? random : Math.random;
     const arr = items.slice();
     for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(rnd() * (i + 1));
       const tmp = arr[i];
       arr[i] = arr[j];
       arr[j] = tmp;
@@ -16,7 +20,53 @@
     return arr;
   }
 
-  global.CharadasCore = { shuffle: shuffle };
+  function buildPoolFrom(data, category) {
+    if (!data || !Array.isArray(data.categories) || !Array.isArray(data.items)) {
+      return [];
+    }
+    const meta = data.categories.find((cat) => cat.id === category);
+    const items = meta && meta.mixed
+      ? data.items
+      : data.items.filter((item) => item.category === category);
+    return items.map((item) => ({ text: item.text, category: item.category }));
+  }
+
+  function evaluateTilt(beta, baseline, locked, threshold, release) {
+    const th = typeof threshold === "number" ? threshold : TILT_THRESHOLD;
+    const rel = typeof release === "number" ? release : TILT_RELEASE;
+    if (typeof beta !== "number" || isNaN(beta) || baseline === null || typeof baseline !== "number") {
+      return { action: null, locked: Boolean(locked), delta: 0 };
+    }
+
+    const direction = baseline >= 0 ? 1 : -1;
+    let drift = beta - baseline;
+    if (drift > 180) drift -= 360;
+    else if (drift < -180) drift += 360;
+    const delta = drift * direction;
+
+    if (Math.abs(delta) < rel) {
+      return { action: null, locked: false, delta: delta };
+    }
+    if (locked) {
+      return { action: null, locked: true, delta: delta };
+    }
+    // Inclinar hacia arriba (mentón arriba) = la sacó; hacia abajo = paso.
+    if (delta < -th) {
+      return { action: "hit", locked: true, delta: delta };
+    }
+    if (delta > th) {
+      return { action: "pass", locked: true, delta: delta };
+    }
+    return { action: null, locked: false, delta: delta };
+  }
+
+  global.CharadasCore = {
+    TILT_THRESHOLD: TILT_THRESHOLD,
+    TILT_RELEASE: TILT_RELEASE,
+    shuffle: shuffle,
+    buildPool: buildPoolFrom,
+    evaluateTilt: evaluateTilt
+  };
 
   if (typeof document === "undefined") {
     return;
@@ -36,8 +86,6 @@
 
   const DURATIONS = [60, 90, 120];
   const RING_CIRCUMFERENCE = 2 * Math.PI * 44;
-  const TILT_THRESHOLD = 42;
-  const TILT_RELEASE = 12;
 
   const CATEGORY_BY_ID = {};
   DATA.categories.forEach((cat) => { CATEGORY_BY_ID[cat.id] = cat; });
@@ -238,12 +286,7 @@
   // ---------- Mazo ----------
 
   function buildPool(category) {
-    const meta = CATEGORY_BY_ID[category];
-    const items = meta && meta.mixed
-      ? DATA.items
-      : DATA.items.filter((item) => item.category === category);
-
-    return items.map((item) => ({ text: item.text, category: item.category }));
+    return buildPoolFrom(DATA, category);
   }
 
   function labelOf(category) {
@@ -683,28 +726,15 @@
       return;
     }
 
-    const direction = sensor.baseline >= 0 ? 1 : -1;
-    let drift = event.beta - sensor.baseline;
-    if (drift > 180) drift -= 360;
-    else if (drift < -180) drift += 360;
-    const delta = drift * direction;
+    const res = evaluateTilt(event.beta, sensor.baseline, sensor.locked, TILT_THRESHOLD, TILT_RELEASE);
+    sensor.locked = res.locked;
 
-    if (Math.abs(delta) < TILT_RELEASE) {
-      sensor.locked = false;
-      return;
-    }
-
-    if (sensor.locked) return;
-
-    // Inclinar hacia arriba (mentón arriba) = la sacó; hacia abajo = paso.
-    if (delta < -TILT_THRESHOLD) {
-      sensor.locked = true;
+    if (res.action === "hit") {
       markHit();
       return;
     }
 
-    if (delta > TILT_THRESHOLD) {
-      sensor.locked = true;
+    if (res.action === "pass") {
       markPass();
     }
   }
@@ -791,6 +821,10 @@
     }
   });
 
+  howDialog.addEventListener("click", (event) => {
+    if (event.target === howDialog) closeHowBtn.click();
+  });
+
   sensorBtn.addEventListener("click", () => {
     if (sensor.enabled) {
       disableSensor("");
@@ -800,7 +834,7 @@
   });
 
   document.addEventListener("keydown", (event) => {
-    if (howDialog.open) return;
+    if (howDialog.open || document.querySelector("dialog[open]")) return;
 
     if (!viewPlay.hidden) {
       if (event.key === " " || event.key === "ArrowUp") {

@@ -357,8 +357,12 @@ closeHowBtn.addEventListener("click", () => {
   }
 });
 
+howDialog.addEventListener("click", (event) => {
+  if (event.target === howDialog) closeHowBtn.click();
+});
+
 document.addEventListener("keydown", (event) => {
-  if (howDialog.open) return;
+  if (howDialog.open || document.querySelector("dialog[open]")) return;
   if (viewGame.hidden) return;
 
   if (event.key === "Escape") {

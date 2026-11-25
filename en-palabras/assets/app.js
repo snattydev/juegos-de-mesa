@@ -1,27 +1,60 @@
-"use strict";
+(function (global) {
+  "use strict";
 
-const DECKS = window.EN_PALABRAS_DECKS;
+  const MAX_ALL_CARDS = 100;
 
-if (!DECKS) {
-  throw new Error("No se cargaron los mazos: revisá data/decks.js");
-}
+  function shuffle(items, random) {
+    const rnd = typeof random === "function" ? random : Math.random;
+    const arr = items.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
 
-const DECK_META = { todas: { label: "Todos los mazos", color: "#1B1917" } };
+  function buildDeck(decks, key, random) {
+    if (!decks || typeof decks !== "object") return [];
+    if (key === "todas") {
+      const all = [];
+      Object.keys(decks).forEach((deckKey) => {
+        const entry = decks[deckKey];
+        if (entry && Array.isArray(entry.questions)) {
+          entry.questions.forEach((text) => {
+            all.push({ cat: deckKey, text: text });
+          });
+        }
+      });
+      return shuffle(all, random).slice(0, MAX_ALL_CARDS);
+    }
+    const deck = decks[key];
+    if (!deck || !Array.isArray(deck.questions)) return [];
+    return shuffle(deck.questions.map((text) => ({ cat: key, text: text })), random);
+  }
 
-Object.keys(DECKS).forEach((key) => {
-  DECK_META[key] = { label: DECKS[key].label, color: DECKS[key].color };
-});
+  global.EN_PALABRAS_CORE = {
+    MAX_ALL_CARDS: MAX_ALL_CARDS,
+    shuffle: shuffle,
+    buildDeck: buildDeck
+  };
 
-const DECK_ORDER = Object.keys(DECKS);
+  if (typeof document === "undefined") return;
 
-const MAX_ALL_CARDS = 100;
+  const DECKS = global.EN_PALABRAS_DECKS;
 
-const ALL_CARDS = [];
-Object.keys(DECKS).forEach((key) => {
-  DECKS[key].questions.forEach((text) => {
-    ALL_CARDS.push({ cat: key, text: text });
+  if (!DECKS) {
+    throw new Error("No se cargaron los mazos: revisá data/decks.js");
+  }
+
+  const DECK_META = { todas: { label: "Todos los mazos", color: "#1B1917" } };
+
+  Object.keys(DECKS).forEach((key) => {
+    DECK_META[key] = { label: DECKS[key].label, color: DECKS[key].color };
   });
-});
+
+  const DECK_ORDER = Object.keys(DECKS);
 
 const state = {
   deck: "todas",
@@ -53,17 +86,6 @@ const cardCount = document.getElementById("cardCount");
 const endPanel = document.getElementById("endPanel");
 const cardWrap = document.getElementById("cardWrap");
 
-function shuffle(items) {
-  const arr = items.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
-  }
-  return arr;
-}
-
 function buildChips() {
   DECK_ORDER.forEach((key) => {
     const meta = DECK_META[key];
@@ -94,17 +116,7 @@ function showHome() {
 
 function startDeck(key) {
   state.deck = key;
-
-  const cards = key === "todas"
-    ? ALL_CARDS.map((card) => ({ cat: card.cat, text: card.text }))
-    : DECKS[key].questions.map((text) => ({ cat: key, text: text }));
-
-  state.queue = shuffle(cards);
-
-  if (key === "todas") {
-    state.queue = state.queue.slice(0, MAX_ALL_CARDS);
-  }
-
+  state.queue = buildDeck(DECKS, key);
   state.total = state.queue.length;
   state.drawn = 0;
   state.current = null;
@@ -215,6 +227,10 @@ closeHowBtn.addEventListener("click", () => {
   }
 });
 
+howDialog.addEventListener("click", (event) => {
+  if (event.target === howDialog) closeHowBtn.click();
+});
+
 // Swipe on touch devices
 let touchStartX = 0;
 let touchStartY = 0;
@@ -236,7 +252,7 @@ cardWrap.addEventListener("touchend", (event) => {
 
 // Keyboard support
 document.addEventListener("keydown", (event) => {
-  if (howDialog.open) return;
+  if (howDialog.open || document.querySelector("dialog[open]")) return;
   if (viewGame.hidden) return;
 
   if (event.key === "ArrowRight") {
@@ -257,3 +273,4 @@ document.addEventListener("keydown", (event) => {
 });
 
 buildChips();
+})(typeof window !== "undefined" ? window : globalThis);

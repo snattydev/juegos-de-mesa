@@ -1,34 +1,80 @@
-"use strict";
+(function (global) {
+  "use strict";
 
-const DATA = window.DESPUES_DATA;
+  const TENSION_STEP = 10;
 
-if (!DATA) {
-  throw new Error("No se cargaron las cartas: revisá data/cards.js");
-}
+  function shuffle(items, random) {
+    const rnd = typeof random === "function" ? random : Math.random;
+    const arr = items.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
 
-const TENSION_STEP = 10;
-const STORAGE_KEY = "despues-de-las-doce-group-names";
-const MIN_GROUP = 3;
-const MAX_GROUP = 8;
+  function filterCards(cards, mode, intensity) {
+    if (!Array.isArray(cards)) return [];
+    const allowed = mode === "duo"
+      ? { solo: true, ambos: true }
+      : { grupo: true, ambos: true };
+    return cards.filter((c) => c.intensity === intensity && allowed[c.audience]);
+  }
 
-const MODE_LABELS = { duo: "Uno a uno", group: "Grupo" };
+  function nextTension(current, action, step) {
+    const delta = typeof step === "number" ? step : TENSION_STEP;
+    if (action !== "cumplida") return current;
+    return Math.min(100, current + delta);
+  }
 
-// ─────────────────────────────── state ───────────────────────────────
+  function finalCardFor(finalCards, intensity, mode) {
+    const final = finalCards && finalCards[intensity];
+    if (!final) return null;
+    // La carta final se elige por modo: en pareja no puede hablar de "elegir a alguien".
+    const text = mode === "duo" ? final.solo : final.grupo;
+    return { intensity: final.intensity, text: text };
+  }
 
-const state = {
-  mode: "duo",
-  intensity: "previa",
-  names: [],
-  turn: 0,
-  pool: [],
-  deck: [],
-  current: null,
-  tension: 0,
-  finalReached: false,
-  stats: { cumplidas: 0, pasadas: 0, otras: 0, rondas: 0 }
-};
+  global.DESPUES_LOGIC = {
+    TENSION_STEP: TENSION_STEP,
+    shuffle: shuffle,
+    filterCards: filterCards,
+    nextTension: nextTension,
+    finalCardFor: finalCardFor
+  };
 
-let groupNames = [];
+  if (typeof document === "undefined") return;
+
+  const DATA = global.DESPUES_DATA;
+
+  if (!DATA) {
+    throw new Error("No se cargaron las cartas: revisá data/cards.js");
+  }
+
+  const STORAGE_KEY = "despues-de-las-doce-group-names";
+  const MIN_GROUP = 3;
+  const MAX_GROUP = 8;
+
+  const MODE_LABELS = { duo: "Uno a uno", group: "Grupo" };
+
+  // ─────────────────────────────── state ───────────────────────────────
+
+  const state = {
+    mode: "duo",
+    intensity: "previa",
+    names: [],
+    turn: 0,
+    pool: [],
+    deck: [],
+    current: null,
+    tension: 0,
+    finalReached: false,
+    stats: { cumplidas: 0, pasadas: 0, otras: 0, rondas: 0 }
+  };
+
+  let groupNames = [];
 
 // ─────────────────────────────── dom ───────────────────────────────
 
@@ -83,17 +129,6 @@ const pickList = $("pickList");
 const closePickBtn = $("closePickBtn");
 
 // ─────────────────────────────── utils ───────────────────────────────
-
-function shuffle(items) {
-  const arr = items.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
-  }
-  return arr;
-}
 
 function show(view) {
   [viewSetup, viewGame, viewEnd].forEach((v) => {
@@ -228,13 +263,7 @@ nameInput.addEventListener("keydown", (e) => {
 // ─────────────────────────────── deck ───────────────────────────────
 
 function buildDeck() {
-  const allowed = state.mode === "duo"
-    ? { solo: true, ambos: true }
-    : { grupo: true, ambos: true };
-
-  state.pool = DATA.cards.filter(
-    (c) => c.intensity === state.intensity && allowed[c.audience]
-  );
+  state.pool = filterCards(DATA.cards, state.mode, state.intensity);
   state.deck = shuffle(state.pool);
 }
 
@@ -248,11 +277,8 @@ function drawCard() {
 }
 
 function drawFinalCard() {
-  const final = DATA.finalCards[state.intensity];
-  // La carta final se elige por modo: en pareja no puede hablar de "elegir a alguien".
-  const text = state.mode === "duo" ? final.solo : final.grupo;
   state.current = {
-    card: { intensity: final.intensity, text: text },
+    card: finalCardFor(DATA.finalCards, state.intensity, state.mode),
     isFinal: true
   };
   state.stats.rondas += 1;
@@ -366,7 +392,7 @@ function resolve(action) {
   advanceTurn();
 
   if (action === "cumplida") {
-    state.tension = Math.min(100, state.tension + TENSION_STEP);
+    state.tension = nextTension(state.tension, action, TENSION_STEP);
     updateTension();
     if (state.tension >= 100) {
       state.finalReached = true;
@@ -425,6 +451,12 @@ pickBtn.addEventListener("click", () => {
 
 closePickBtn.addEventListener("click", () => closeDialog(pickDialog));
 
+[howDialog, rulesDialog, pickDialog].forEach((dialog) => {
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) closeDialog(dialog);
+  });
+});
+
 // ─────────────────────────────── init ───────────────────────────────
 
 show(viewSetup);
@@ -432,3 +464,4 @@ loadGroupNames();
 renderNameChips();
 intensityHint.textContent = DATA.intensities[state.intensity].tagline + ".";
 pickBtn.hidden = true;
+})(typeof window !== "undefined" ? window : globalThis);

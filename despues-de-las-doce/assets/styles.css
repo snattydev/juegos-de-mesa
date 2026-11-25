@@ -747,3 +747,7 @@ dialog::backdrop {
 @media (min-width: 520px) {
   .seg-three { flex-direction: row; }
 }
+
+@media (max-width: 860px) {
+  #viewGame .game-top { padding-right: 48px; }
+}

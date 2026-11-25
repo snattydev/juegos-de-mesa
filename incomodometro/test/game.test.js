@@ -39,14 +39,14 @@ function players(ids) {
   }));
 }
 
-console.log("\nMazo de consignas");
+console.log("\nMazo de situaciones");
 
-test("hay exactamente 80 consignas", () => {
+test("hay exactamente 80 situaciones", () => {
   assert.ok(Array.isArray(PROMPTS), "INCOMODOMETRO_DATA debe ser un array");
   assert.equal(PROMPTS.length, 80);
 });
 
-test("las 80 consignas son únicas (aun sin mayúsculas ni acentos)", () => {
+test("las 80 situaciones son únicas (aun sin mayúsculas ni acentos)", () => {
   const normalized = PROMPTS.map((prompt) =>
     prompt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
   );
@@ -54,11 +54,11 @@ test("las 80 consignas son únicas (aun sin mayúsculas ni acentos)", () => {
   assert.equal(new Set(normalized).size, 80);
 });
 
-test("cada consigna es una frase limpia y completa", () => {
+test("cada situación es una frase limpia y completa", () => {
   PROMPTS.forEach((prompt) => {
     assert.equal(typeof prompt, "string");
     assert.equal(prompt, prompt.trim(), "sin espacios en los bordes: " + prompt);
-    assert.ok(prompt.length >= 12, "consigna demasiado corta: " + prompt);
+    assert.ok(prompt.length >= 12, "situación demasiado corta: " + prompt);
     assert.equal(prompt[0], prompt[0].toLowerCase(), "empieza en minúscula: " + prompt);
     assert.ok(!/[.!?]$/.test(prompt), "sin puntuación final: " + prompt);
   });
@@ -75,7 +75,7 @@ test("no hay contenido sexual explícito ni violento en la lista", () => {
 
 console.log("\nMazo y repeticiones");
 
-test("createDeck devuelve las 80 consignas mezcladas sin mutar el original", () => {
+test("createDeck devuelve las 80 situaciones mezcladas sin mutar el original", () => {
   const original = PROMPTS.slice();
   const deck = logic.createDeck(PROMPTS, seededRandom(2024));
 
@@ -85,14 +85,14 @@ test("createDeck devuelve las 80 consignas mezcladas sin mutar el original", () 
   assert.deepEqual(PROMPTS, original, "el mazo original no se toca");
 });
 
-test("una partida completa de 80 rondas no repite ninguna consigna", () => {
+test("una partida completa de 80 rondas no repite ninguna situación", () => {
   const queue = logic.createDeck(PROMPTS, seededRandom(7));
   const seen = new Set();
 
   for (let round = 0; round < 80; round += 1) {
     assert.ok(queue.length > 0, "el mazo se agotó antes de la ronda " + (round + 1));
     const prompt = queue.shift();
-    assert.ok(!seen.has(prompt), "consigna repetida en la ronda " + (round + 1) + ": " + prompt);
+    assert.ok(!seen.has(prompt), "situación repetida en la ronda " + (round + 1) + ": " + prompt);
     seen.add(prompt);
   }
 

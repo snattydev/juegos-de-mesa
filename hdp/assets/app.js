@@ -608,6 +608,9 @@
     if (typeof el.howDialog.close === "function") el.howDialog.close();
     else el.howDialog.removeAttribute("open");
   });
+  el.howDialog.addEventListener("click", function (event) {
+    if (event.target === el.howDialog) el.closeHowBtn.click();
+  });
 
   /* ---------- Arranque ---------- */
   loadSession();

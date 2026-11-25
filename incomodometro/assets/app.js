@@ -3,7 +3,7 @@
 const PROMPTS = window.INCOMODOMETRO_DATA;
 
 if (!Array.isArray(PROMPTS) || PROMPTS.length === 0) {
-  throw new Error("No se cargaron las consignas: revisá data/prompts.js");
+  throw new Error("No se cargaron las situaciones: revisá data/prompts.js");
 }
 
 const MIN_PLAYERS = 3;
@@ -463,11 +463,11 @@ function init() {
 
     const left = state.queue.length;
     if (left === 0) {
-      roundSub.textContent = "Última consigna";
+      roundSub.textContent = "Última situación";
     } else if (left === 1) {
-      roundSub.textContent = "Queda 1 consigna";
+      roundSub.textContent = "Queda 1 situación";
     } else {
-      roundSub.textContent = "Quedan " + left + " consignas";
+      roundSub.textContent = "Quedan " + left + " situaciones";
     }
 
     promptText.textContent = state.prompt;

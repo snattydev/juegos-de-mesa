@@ -556,7 +556,7 @@
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && !howDialog.open && !viewGame.hidden && !state.spinning) {
+    if (event.key === "Escape" && !howDialog.open && !document.querySelector("dialog[open]") && !viewGame.hidden && !state.spinning) {
       editPlayers();
     }
   });
