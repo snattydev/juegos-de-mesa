@@ -18,7 +18,7 @@
   const WHITE = CARDS.WHITE;
 
   const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const CODE_LENGTH = 4;
+  const CODE_LENGTH = 6;
   const LABELS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   const HAND_SIZE = 10;
@@ -417,6 +417,8 @@
   }
 
   const constants = {
+    CODE_LENGTH,
+    CODE_ALPHABET,
     HAND_SIZE,
     MIN_PLAYERS,
     MAX_PLAYERS,

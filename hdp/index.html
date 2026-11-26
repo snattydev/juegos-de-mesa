@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0F0E0C">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../shared/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Juegos de mesa">
   <meta name="description" content="HDP: el juego de cartas para completar frases picantes. Hasta donde puedas, entre amigos.">
   <title>HDP — Hasta donde puedas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230F0E0C'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='48' fill='%23F3EDE4' text-anchor='middle'%3EHDP%3C/text%3E%3C/svg%3E">
@@ -38,21 +44,15 @@
       </form>
 
       <form class="home-form home-join" id="joinForm">
-        <label class="field-label" for="codeInput">¿Te invitaron?</label>
-        <textarea class="input input-code" id="codeInput" name="code" rows="3" autocomplete="off" placeholder="Pegá acá la invitación que te pasó el host" aria-label="Código de invitación"></textarea>
-        <button class="btn btn-ghost" type="submit">Unirme</button>
+        <label class="field-label" for="codeInput">¿Tenés un código?</label>
+        <div class="join-row">
+          <input class="input input-code" id="codeInput" name="code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="ABC123" aria-label="Código de sala de 6 caracteres">
+          <button class="btn btn-ghost" id="joinBtn" type="submit">Unirme</button>
+        </div>
       </form>
 
-      <section class="net-panel" id="guestPanel" hidden aria-live="polite">
-        <h3 class="panel-title">Pasale esto al host</h3>
-        <p class="hint">Copiá tu respuesta y mandásela. Cuando la pegue, entrás solo.</p>
-        <textarea class="input input-code" id="answerOut" rows="4" readonly aria-label="Tu respuesta para el host"></textarea>
-        <button class="btn btn-ghost" id="copyAnswerBtn" type="button">Copiar respuesta</button>
-        <p class="hint" id="guestStatus">Esperando al host…</p>
-      </section>
-
       <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
-      <p class="home-note">Un celular hace de mesa y el resto entra con un código, sin servidor ni cuentas.</p>
+      <p class="home-note">Un celular crea la sala y los demás entran con un código de 6 caracteres, sin cuentas.</p>
       <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
     </main>
 
@@ -61,16 +61,14 @@
       <p class="kicker">Sala</p>
       <h2 class="view-title">Que entren todos</h2>
 
-      <div class="net-panel" id="hostPanel" hidden>
-        <h3 class="panel-title">Sumar jugadores</h3>
-        <p class="hint">Generá una invitación y mandásela. Después pegá lo que te devuelva.</p>
-        <button class="btn btn-ghost" id="inviteBtn" type="button">Generar invitación</button>
-        <textarea class="input input-code" id="inviteOut" rows="3" readonly aria-label="Invitación para un jugador"></textarea>
-        <button class="btn btn-ghost" id="copyInviteBtn" type="button">Copiar invitación</button>
-        <label class="field-label" for="answerIn">Pegar respuesta del jugador</label>
-        <textarea class="input input-code" id="answerIn" rows="3" placeholder="Pegá acá la respuesta" aria-label="Respuesta del jugador"></textarea>
-        <button class="btn btn-primary" id="acceptBtn" type="button">Conectar jugador</button>
-        <p class="hint" id="netStatus" aria-live="polite"></p>
+      <div class="room-code-panel" id="roomCodePanel">
+        <span class="panel-title">Código de sala</span>
+        <div class="room-code-value" id="roomCodeValue" aria-live="polite">------</div>
+        <p class="hint">Pasales este código de 6 caracteres para que entren desde su celular.</p>
+        <div class="room-code-actions">
+          <button class="btn btn-primary" id="copyCodeBtn" type="button">Copiar código</button>
+          <button class="btn btn-ghost" id="copyLinkBtn" type="button">Copiar link</button>
+        </div>
       </div>
 
       <div class="players-panel">
@@ -158,7 +156,7 @@
   <dialog id="howDialog">
     <h2 class="dialog-title">Cómo se juega</h2>
     <ol class="steps">
-      <li><strong>Uno crea la sala</strong> y el resto entra con el código. De 3 a 12 personas.</li>
+      <li><strong>Uno crea la sala</strong> y el resto entra con el código de 6 caracteres. De 3 a 12 personas.</li>
       <li><strong>Cada ronda, uno es el juez</strong> y lee la frase en voz alta.</li>
       <li><strong>Todos eligen cartas de su mano</strong> para completar la frase del modo más gracioso posible.</li>
       <li><strong>El juez elige la que más le gusta</strong> sin saber de quién es. Quien la jugó suma un punto.</li>

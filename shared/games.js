@@ -149,6 +149,8 @@
     }
   ];
 
+  var SEEN_INTROS_KEY = "juegos-seen-intros";
+
   function resolveGameHref(slug, protocol) {
     var clean = String(slug || "").replace(/^\/+|\/+$/g, "");
     return protocol === "file:" ? clean + "/index.html" : clean + "/";
@@ -158,9 +160,66 @@
     return protocol === "file:" ? "../index.html" : "../";
   }
 
+  function readSeenIntros(storage) {
+    var store = storage;
+    if (!store) {
+      try {
+        store = typeof localStorage !== "undefined" ? localStorage : null;
+      } catch (_) {
+        store = null;
+      }
+    }
+    if (!store || typeof store.getItem !== "function") return {};
+    try {
+      var raw = store.getItem(SEEN_INTROS_KEY);
+      if (!raw) return {};
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        var map = {};
+        parsed.forEach(function (slug) {
+          if (typeof slug === "string" && slug) map[slug] = true;
+        });
+        return map;
+      }
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch (_) {}
+    return {};
+  }
+
+  function hasSeenIntro(slug, storage) {
+    var clean = String(slug || "").trim();
+    if (!clean) return false;
+    return Boolean(readSeenIntros(storage)[clean]);
+  }
+
+  function markIntroSeen(slug, storage) {
+    var clean = String(slug || "").trim();
+    if (!clean) return false;
+    var store = storage;
+    if (!store) {
+      try {
+        store = typeof localStorage !== "undefined" ? localStorage : null;
+      } catch (_) {
+        store = null;
+      }
+    }
+    if (!store || typeof store.setItem !== "function") return false;
+    try {
+      var seen = readSeenIntros(store);
+      seen[clean] = true;
+      store.setItem(SEEN_INTROS_KEY, JSON.stringify(seen));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   return {
     games: GAMES,
+    SEEN_INTROS_KEY: SEEN_INTROS_KEY,
     resolveGameHref: resolveGameHref,
-    resolveHubHref: resolveHubHref
+    resolveHubHref: resolveHubHref,
+    hasSeenIntro: hasSeenIntro,
+    markIntroSeen: markIntroSeen
   };
 });

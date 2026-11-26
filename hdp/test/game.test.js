@@ -53,7 +53,7 @@ ok("cero duplicados en cartas blancas", whiteDups.length === 0, String(whiteDups
 
 // Motor puro: lobby → jugar → juzgar → revelar → fin
 const { room, token: host } = E.createRoom("Host");
-ok("sala creada", room && room.code.length === 4, room && room.code);
+ok("sala creada con código de 6 caracteres", room && room.code.length === 6 && /^[A-Z2-9]{6}$/.test(room.code), room && room.code);
 ok("host conectado", room.players.get(host).connected === true);
 
 const a = E.addPlayer(room, "Ana");

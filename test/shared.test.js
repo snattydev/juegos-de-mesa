@@ -203,6 +203,22 @@ check("resolveGameHref y resolveHubHref soportan file:// y HTTP", () => {
   assert.equal(CATALOG.resolveHubHref("https:"), "../");
 });
 
+check("hasSeenIntro y markIntroSeen persisten intros vistas por juego", () => {
+  const mem = {};
+  const fakeStorage = {
+    getItem(k) {
+      return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null;
+    },
+    setItem(k, v) {
+      mem[k] = String(v);
+    }
+  };
+  assert.equal(CATALOG.hasSeenIntro("hdp", fakeStorage), false);
+  assert.equal(CATALOG.markIntroSeen("hdp", fakeStorage), true);
+  assert.equal(CATALOG.hasSeenIntro("hdp", fakeStorage), true);
+  assert.equal(CATALOG.hasSeenIntro("ahorcado", fakeStorage), false);
+});
+
 console.log("\nTema (shared/theme.js)");
 
 const themeCode = fs.readFileSync(path.join(ROOT, "shared", "theme.js"), "utf8");
@@ -293,6 +309,233 @@ check("hasOpenDialog detecta diálogos abiertos", () => {
   assert.equal(ctx.sandbox.JuegosChrome.hasOpenDialog(), false);
   ctx.doc.getElementById("hubDialog").open = true;
   assert.equal(ctx.sandbox.JuegosChrome.hasOpenDialog(), true);
+});
+
+console.log("\nPWA (shared/chrome.js)");
+
+check("canRegisterServiceWorker valida protocolo, host y disponibilidad de la API", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  // https: en cualquier host
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "https:", hostname: "example.com" },
+      navigator: { serviceWorker: {} }
+    }),
+    true
+  );
+
+  // http: en localhost y 127.0.0.1
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "http:", hostname: "localhost" },
+      navigator: { serviceWorker: {} }
+    }),
+    true
+  );
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "http:", hostname: "127.0.0.1" },
+      navigator: { serviceWorker: {} }
+    }),
+    true
+  );
+
+  // file: no permitido
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "file:", hostname: "" },
+      navigator: { serviceWorker: {} }
+    }),
+    false
+  );
+
+  // http: en IP LAN
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "http:", hostname: "192.168.1.5" },
+      navigator: { serviceWorker: {} }
+    }),
+    false
+  );
+
+  // sin navigator.serviceWorker
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "https:", hostname: "example.com" },
+      navigator: {}
+    }),
+    false
+  );
+  assert.equal(
+    api.canRegisterServiceWorker({
+      location: { protocol: "https:", hostname: "example.com" }
+    }),
+    false
+  );
+});
+
+check("resolveSwHref retorna ./sw.js en hub y ../sw.js en juegos", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  const hubDoc = { documentElement: { dataset: { page: "hub" } } };
+  assert.equal(api.resolveSwHref(hubDoc), "./sw.js");
+
+  const gameDoc = { documentElement: { dataset: {} } };
+  assert.equal(api.resolveSwHref(gameDoc), "../sw.js");
+
+  const emptyDoc = {};
+  assert.equal(api.resolveSwHref(emptyDoc), "../sw.js");
+});
+
+check("isStandalone detecta display-mode: standalone o navigator.standalone", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  // matchMedia standalone
+  assert.equal(
+    api.isStandalone({
+      matchMedia(q) {
+        return { matches: q === "(display-mode: standalone)" };
+      }
+    }),
+    true
+  );
+
+  // navigator.standalone === true
+  assert.equal(
+    api.isStandalone({
+      matchMedia() {
+        return { matches: false };
+      },
+      navigator: { standalone: true }
+    }),
+    true
+  );
+
+  // ninguno
+  assert.equal(
+    api.isStandalone({
+      matchMedia() {
+        return { matches: false };
+      },
+      navigator: { standalone: false }
+    }),
+    false
+  );
+  assert.equal(api.isStandalone({}), false);
+});
+
+check("isIosSafari identifica Safari en iOS y excluye CriOS o Chrome en Android", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  const iphoneSafariUA =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
+  assert.equal(
+    api.isIosSafari({
+      navigator: { userAgent: iphoneSafariUA }
+    }),
+    true
+  );
+
+  const iosChromeUA =
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/117.0.5938.108 Mobile/15E148 Safari/604.1";
+  assert.equal(
+    api.isIosSafari({
+      navigator: { userAgent: iosChromeUA }
+    }),
+    false
+  );
+
+  const androidChromeUA =
+    "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36";
+  assert.equal(
+    api.isIosSafari({
+      navigator: { userAgent: androidChromeUA }
+    }),
+    false
+  );
+});
+
+check("registerServiceWorker registra ./sw.js en hub sobre https: y omite en file:", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  const registeredCalls = [];
+  const fakeNav = {
+    serviceWorker: {
+      register(path) {
+        registeredCalls.push(path);
+        return Promise.resolve();
+      }
+    }
+  };
+
+  const hubDoc = { documentElement: { dataset: { page: "hub" } } };
+  const httpsWin = {
+    location: { protocol: "https:", hostname: "example.com" },
+    navigator: fakeNav
+  };
+
+  const result = api.registerServiceWorker(hubDoc, httpsWin);
+  assert.ok(result);
+  assert.deepEqual(registeredCalls, ["./sw.js"]);
+
+  // en file: no registra
+  const fileWin = {
+    location: { protocol: "file:", hostname: "" },
+    navigator: fakeNav
+  };
+  const fileResult = api.registerServiceWorker(hubDoc, fileWin);
+  assert.equal(fileResult, null);
+  assert.equal(registeredCalls.length, 1);
+});
+
+check("mountInstallPrompt maneja ciclo de vida del botón de instalación y omite en standalone o juegos", () => {
+  const api = require(path.join(ROOT, "shared", "chrome.js"));
+
+  // 1. En páginas que no son hub no monta nada
+  const nonHubCtx = createDomSandbox({ page: "" });
+  const nonHubBtn = api.mountInstallPrompt(nonHubCtx.doc, nonHubCtx.sandbox);
+  assert.equal(nonHubBtn, null);
+  assert.equal(nonHubCtx.doc.getElementById("installAppBtn"), null);
+
+  // 2. En standalone no monta nada
+  const standaloneCtx = createDomSandbox({ page: "hub" });
+  standaloneCtx.sandbox.navigator = { standalone: true };
+  const standaloneBtn = api.mountInstallPrompt(standaloneCtx.doc, standaloneCtx.sandbox);
+  assert.equal(standaloneBtn, null);
+  assert.equal(standaloneCtx.doc.getElementById("installAppBtn"), null);
+
+  // 3. En hub (no standalone) monta el botón inicialmente oculto
+  const hubCtx = createDomSandbox({ page: "hub" });
+  const listeners = new Map();
+  hubCtx.sandbox.addEventListener = (type, fn) => {
+    if (!listeners.has(type)) listeners.set(type, []);
+    listeners.get(type).push(fn);
+  };
+  hubCtx.sandbox.dispatchEvent = (event) => {
+    const list = listeners.get(event.type) || [];
+    list.forEach((fn) => fn(event));
+  };
+
+  const btn = api.mountInstallPrompt(hubCtx.doc, hubCtx.sandbox);
+  assert.ok(btn);
+  assert.equal(btn.id, "installAppBtn");
+  assert.equal(btn.hidden, true);
+
+  // dispatch beforeinstallprompt llama preventDefault() y desoculta el botón
+  let prevented = false;
+  hubCtx.sandbox.dispatchEvent({
+    type: "beforeinstallprompt",
+    preventDefault() {
+      prevented = true;
+    }
+  });
+  assert.equal(prevented, true);
+  assert.equal(btn.hidden, false);
+
+  // dispatch appinstalled vuelve a ocultar el botón
+  hubCtx.sandbox.dispatchEvent({ type: "appinstalled" });
+  assert.equal(btn.hidden, true);
 });
 
 console.log("\n" + passed + " pruebas pasaron, " + failures.length + " fallaron.");

@@ -22,6 +22,196 @@
     return Boolean(d.querySelector("dialog[open]"));
   }
 
+  function isStandalone(targetWin) {
+    var w = targetWin || win;
+    if (!w) return false;
+    try {
+      if (typeof w.matchMedia === "function") {
+        var mq = w.matchMedia("(display-mode: standalone)");
+        if (mq && mq.matches) return true;
+      }
+      if (w.navigator && w.navigator.standalone === true) {
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  function isIosSafari(targetWin) {
+    var w = targetWin || win;
+    if (!w || !w.navigator) return false;
+    var nav = w.navigator;
+    var ua = typeof nav.userAgent === "string" ? nav.userAgent : "";
+    var platform = typeof nav.platform === "string" ? nav.platform : "";
+    var maxTouchPoints = typeof nav.maxTouchPoints === "number" ? nav.maxTouchPoints : 0;
+
+    var isIosDevice = /iPhone|iPad|iPod/.test(ua) || (platform === "MacIntel" && maxTouchPoints > 1);
+    if (!isIosDevice) return false;
+
+    var isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome/.test(ua);
+    return isSafari;
+  }
+
+  function canRegisterServiceWorker(targetWin) {
+    var w = targetWin || win;
+    if (!w || !w.navigator || !("serviceWorker" in w.navigator) || !w.location) {
+      return false;
+    }
+    var protocol = w.location.protocol;
+    var hostname = w.location.hostname;
+    if (protocol === "https:") {
+      return true;
+    }
+    if (protocol === "http:" && (hostname === "localhost" || hostname === "127.0.0.1")) {
+      return true;
+    }
+    return false;
+  }
+
+  function resolveSwHref(targetDoc) {
+    var d = targetDoc || doc;
+    if (d && d.documentElement && d.documentElement.dataset && d.documentElement.dataset.page === "hub") {
+      return "./sw.js";
+    }
+    return "../sw.js";
+  }
+
+  function registerServiceWorker(targetDoc, targetWin) {
+    var d = targetDoc || doc;
+    var w = targetWin || win;
+    if (!canRegisterServiceWorker(w)) return null;
+
+    try {
+      var res = w.navigator.serviceWorker.register(resolveSwHref(d));
+      if (res && typeof res.catch === "function") {
+        res.catch(function () {});
+      }
+      return res;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function mountInstallPrompt(targetDoc, targetWin) {
+    var d = targetDoc || doc;
+    var w = targetWin || win;
+    if (!d || !d.documentElement || !d.documentElement.dataset) return null;
+    if (d.documentElement.dataset.page !== "hub") return null;
+    if (isStandalone(w)) return null;
+
+    var btn = d.getElementById("installAppBtn");
+    if (!btn) {
+      btn = d.createElement("button");
+      btn.type = "button";
+      btn.className = "install-btn";
+      btn.id = "installAppBtn";
+      btn.hidden = true;
+      btn.setAttribute("hidden", "");
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
+        '<polyline points="7 10 12 15 17 10"/>' +
+        '<line x1="12" y1="15" x2="12" y2="3"/>' +
+        '</svg>' +
+        '<span>Instalar en el celular</span>';
+
+      var credit = typeof d.querySelector === "function" ? d.querySelector(".credit") : null;
+      var main = typeof d.querySelector === "function" ? d.querySelector("main") : null;
+
+      if (main && credit && typeof main.insertBefore === "function") {
+        main.insertBefore(btn, credit);
+      } else if (d.body && typeof d.body.appendChild === "function") {
+        d.body.appendChild(btn);
+      }
+    }
+
+    var installDialog = d.getElementById("installDialog");
+    function ensureInstallDialog() {
+      if (!installDialog) {
+        installDialog = d.createElement("dialog");
+        installDialog.id = "installDialog";
+        installDialog.className = "hub-dialog";
+        installDialog.setAttribute("aria-labelledby", "installTitle");
+        installDialog.innerHTML =
+          '<h2 id="installTitle">Instalar en el celular</h2>' +
+          '<p>En Safari, tocá el botón <strong>Compartir</strong> y elegí <strong>«Agregar a inicio»</strong>. Después la abrís como cualquier app, incluso sin señal.</p>' +
+          '<div class="hub-actions">' +
+          '<button class="hub-btn hub-btn-primary" id="installClose" type="button">Entendido</button>' +
+          '</div>';
+        if (d.body && typeof d.body.appendChild === "function") {
+          d.body.appendChild(installDialog);
+        }
+      }
+
+      var closeBtn = d.getElementById("installClose");
+      if (closeBtn && (!closeBtn.dataset || closeBtn.dataset.chromeBound !== "1")) {
+        if (closeBtn.dataset) closeBtn.dataset.chromeBound = "1";
+        closeBtn.addEventListener("click", function () {
+          closeDialog(installDialog);
+        });
+      }
+      bindBackdropClose(installDialog);
+      return installDialog;
+    }
+
+    var deferredPrompt = null;
+
+    if (w && typeof w.addEventListener === "function") {
+      w.addEventListener("beforeinstallprompt", function (event) {
+        if (event && typeof event.preventDefault === "function") {
+          event.preventDefault();
+        }
+        deferredPrompt = event;
+        btn.hidden = false;
+        btn.removeAttribute("hidden");
+      });
+
+      w.addEventListener("appinstalled", function () {
+        deferredPrompt = null;
+        btn.hidden = true;
+        btn.setAttribute("hidden", "");
+        if (installDialog) {
+          closeDialog(installDialog);
+        }
+      });
+    }
+
+    if (isIosSafari(w)) {
+      btn.hidden = false;
+      btn.removeAttribute("hidden");
+    }
+
+    if (!btn.dataset || btn.dataset.chromeBound !== "1") {
+      if (btn.dataset) btn.dataset.chromeBound = "1";
+      btn.addEventListener("click", function () {
+        if (deferredPrompt) {
+          if (typeof deferredPrompt.prompt === "function") {
+            deferredPrompt.prompt();
+          }
+          if (deferredPrompt.userChoice && typeof deferredPrompt.userChoice.then === "function") {
+            deferredPrompt.userChoice.then(function (choiceResult) {
+              if (choiceResult && choiceResult.outcome === "accepted") {
+                btn.hidden = true;
+                btn.setAttribute("hidden", "");
+              }
+              deferredPrompt = null;
+            }).catch(function () {
+              deferredPrompt = null;
+            });
+          } else {
+            deferredPrompt = null;
+          }
+        } else {
+          var dlg = ensureInstallDialog();
+          var closeBtn = d.getElementById("installClose");
+          openDialog(dlg, closeBtn);
+        }
+      });
+    }
+
+    return btn;
+  }
+
   function openDialog(dialog, focusEl) {
     if (!dialog) return;
     if (typeof dialog.showModal === "function") {
@@ -205,6 +395,8 @@
 
     mountThemeToggle(d, w);
     mountHubChrome(d, w);
+    mountInstallPrompt(d, w);
+    registerServiceWorker(d, w);
 
     ["howDialog", "rulesDialog", "pickDialog"].forEach(function (id) {
       var el = d.getElementById(id);
@@ -228,6 +420,12 @@
     openDialog: openDialog,
     closeDialog: closeDialog,
     openHubDialog: openHubDialog,
-    initChrome: initChrome
+    initChrome: initChrome,
+    isStandalone: isStandalone,
+    isIosSafari: isIosSafari,
+    canRegisterServiceWorker: canRegisterServiceWorker,
+    resolveSwHref: resolveSwHref,
+    registerServiceWorker: registerServiceWorker,
+    mountInstallPrompt: mountInstallPrompt
   };
 });
