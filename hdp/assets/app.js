@@ -25,10 +25,14 @@
     createForm: document.getElementById("createForm"),
     joinForm: document.getElementById("joinForm"),
     codeInput: document.getElementById("codeInput"),
+    joinBtn: document.getElementById("joinBtn"),
     howBtn: document.getElementById("howBtn"),
     howDialog: document.getElementById("howDialog"),
     closeHowBtn: document.getElementById("closeHowBtn"),
 
+    roomCodeValue: document.getElementById("roomCodeValue"),
+    copyCodeBtn: document.getElementById("copyCodeBtn"),
+    copyLinkBtn: document.getElementById("copyLinkBtn"),
     playerCount: document.getElementById("playerCount"),
     playersList: document.getElementById("playersList"),
     lobbyHost: document.getElementById("lobbyHost"),
@@ -174,6 +178,7 @@
 
   function renderLobby() {
     var players = snapshot.players;
+    if (el.roomCodeValue) el.roomCodeValue.textContent = snapshot.code || "------";
     el.playerCount.textContent = String(players.length);
     el.playersList.innerHTML = "";
     players.forEach(function (p) {
@@ -409,22 +414,10 @@
   }
 
   /* ---------- Sala P2P ---------- */
-  function netEl(id) { return document.getElementById(id); }
-
-  function showNetPanel(kind, answer) {
-    var host = netEl("hostPanel");
-    var guest = netEl("guestPanel");
-    if (host) host.hidden = kind !== "host";
-    if (guest) guest.hidden = kind !== "guest";
-    if (kind === "guest" && guest) {
-      netEl("answerOut").value = answer || "";
-      netEl("guestStatus").textContent = "Esperando al host…";
-    }
-  }
-
-  function hideNetPanel() {
-    var guest = netEl("guestPanel");
-    if (guest) guest.hidden = true;
+  function setJoining(busy) {
+    if (!el.joinBtn) return;
+    el.joinBtn.disabled = busy;
+    el.joinBtn.textContent = busy ? "Conectando…" : "Unirme";
   }
 
   function startHost(name) {
@@ -434,31 +427,44 @@
         session = { code: data.code, token: data.token };
         saveSession();
         el.nameInput.value = "";
-        showNetPanel("host");
         connect();
       })
       .catch(function (e) { toast(e.message, "error"); });
   }
 
-  function startGuest(invite, name) {
+  function startGuest(rawCode, name) {
+    var code = window.HDP_NET ? HDP_NET.normalizeRoomCode(rawCode) : String(rawCode || "").trim().toUpperCase();
+    if (!window.HDP_NET || !HDP_NET.isValidRoomCode(code)) {
+      toast("El código tiene que tener 6 caracteres", "error");
+      return;
+    }
+
     HDP_BACKEND.reset();
-    HDP_BACKEND.join(invite, name)
-      .then(function (res) {
-        el.nameInput.value = "";
-        el.codeInput.value = "";
-        showNetPanel("guest", res.answer);
-        HDP_BACKEND.subscribe(function (snap) {
-          if (!snap) return;
-          if (!session) {
-            session = { code: snap.code, token: HDP_BACKEND.token };
-            saveSession();
-          }
-          applySnapshot(snap);
-          setConn("online");
-          hideNetPanel();
-        });
-      })
-      .catch(function (e) { toast(e.message, "error"); });
+    setJoining(true);
+    HDP_BACKEND.afterJoin({
+      onError: function (msg) {
+        setJoining(false);
+        toast(msg || "No pudiste entrar a la sala", "error");
+      },
+    });
+    HDP_BACKEND.subscribe(function (snap) {
+      if (!snap) return;
+      if (!session) {
+        session = { code: snap.code, token: HDP_BACKEND.token };
+        saveSession();
+      }
+      setJoining(false);
+      el.nameInput.value = "";
+      el.codeInput.value = "";
+      applySnapshot(snap);
+      setConn("online");
+    });
+
+    HDP_BACKEND.join(code, name)
+      .catch(function (e) {
+        setJoining(false);
+        toast(e.message, "error");
+      });
   }
 
   function leaveGame() {
@@ -469,7 +475,7 @@
   }
 
   function goHome() {
-    hideNetPanel();
+    setJoining(false);
     if (window.HDP_BACKEND) HDP_BACKEND.reset();
     clearSession();
     snapshot = null;
@@ -503,13 +509,20 @@
     startHost(name);
   });
 
+  el.codeInput.addEventListener("input", function () {
+    if (window.HDP_NET) {
+      var clean = HDP_NET.normalizeRoomCode(el.codeInput.value);
+      if (el.codeInput.value !== clean) el.codeInput.value = clean;
+    }
+  });
+
   el.joinForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var name = el.nameInput.value.trim();
-    var invite = el.codeInput.value.trim();
+    var code = el.codeInput.value.trim();
     if (!name) { toast("Poné tu nombre", "error"); return; }
-    if (!invite) { toast("Pegá la invitación", "error"); return; }
-    startGuest(invite, name);
+    if (!code) { toast("Escribí el código de 6 caracteres", "error"); return; }
+    startGuest(code, name);
   });
 
   function copyText(text, okMsg) {
@@ -524,44 +537,15 @@
     }
   }
 
-  var inviteBtn = netEl("inviteBtn");
-  if (inviteBtn) inviteBtn.addEventListener("click", function () {
-    inviteBtn.disabled = true;
-    HDP_BACKEND.invite()
-      .then(function (res) {
-        netEl("inviteOut").value = res ? res.code : "";
-        netEl("answerIn").value = "";
-        netEl("netStatus").textContent = "Invitación lista: copiala y mandásela a alguien.";
-      })
-      .catch(function (e) { toast(e.message, "error"); })
-      .then(function () { inviteBtn.disabled = false; });
+  if (el.copyCodeBtn) el.copyCodeBtn.addEventListener("click", function () {
+    if (snapshot && snapshot.code) copyText(snapshot.code, "Código copiado");
   });
 
-  var acceptBtn = netEl("acceptBtn");
-  if (acceptBtn) acceptBtn.addEventListener("click", function () {
-    var code = netEl("answerIn").value.trim();
-    if (!code) { toast("Pegá la respuesta", "error"); return; }
-    HDP_BACKEND.acceptAnswer(code).then(function (res) {
-      if (res && res.error) {
-        netEl("netStatus").textContent = res.error;
-        toast(res.error, "error");
-        return;
-      }
-      netEl("answerIn").value = "";
-      netEl("inviteOut").value = "";
-      netEl("netStatus").textContent = "Jugador conectado.";
-      toast("Jugador conectado", "ok");
-    });
-  });
-
-  var copyInviteBtn = netEl("copyInviteBtn");
-  if (copyInviteBtn) copyInviteBtn.addEventListener("click", function () {
-    copyText(netEl("inviteOut").value, "Invitación copiada");
-  });
-
-  var copyAnswerBtn = netEl("copyAnswerBtn");
-  if (copyAnswerBtn) copyAnswerBtn.addEventListener("click", function () {
-    copyText(netEl("answerOut").value, "Respuesta copiada");
+  if (el.copyLinkBtn) el.copyLinkBtn.addEventListener("click", function () {
+    if (!snapshot || !snapshot.code) return;
+    var url = new URL(window.location.href);
+    url.searchParams.set("sala", snapshot.code);
+    copyText(url.toString(), "Link de la sala copiado");
   });
 
   el.startBtn.addEventListener("click", function () {
@@ -613,6 +597,14 @@
   });
 
   /* ---------- Arranque ---------- */
+  try {
+    var params = new URLSearchParams(window.location.search);
+    var salaParam = params.get("sala");
+    if (salaParam && el.codeInput && window.HDP_NET) {
+      el.codeInput.value = HDP_NET.normalizeRoomCode(salaParam);
+    }
+  } catch (e) {}
+
   loadSession();
   if (session) {
     authed("/api/state")

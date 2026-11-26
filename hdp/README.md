@@ -8,21 +8,21 @@ Es un juego de juntada: humor picante argentino, pero sin explicitud.
 
 De 3 a 12 personas. Uno hace de mesa y el resto entra con un código.
 
-1. **Uno crea la sala** desde su navegador, sin instalar nada.
-2. **Invita al resto.** Por cada jugador genera una invitación, se la manda (WhatsApp, mail, lo que sea) y pega la respuesta que le devuelve. Con eso queda conectado.
+1. **Uno crea la sala** desde su navegador, sin instalar nada, y recibe un código de 6 caracteres.
+2. **El resto entra con ese código** (o con el link de la sala) poniendo su nombre.
 3. **Cada ronda uno es el juez** y lee la frase en voz alta. Los demás eligen de su mano las cartas para completarla del modo más gracioso posible.
 4. **El juez elige la que más le gusta**, sin saber de quién es. Quien la jugó suma un punto.
 5. **El juez va rotando** y gana quien primero junta los puntos acordados (5 por defecto, configurable entre 3 y 10).
 
 ## Cómo conectarse
 
-No hay servidor: el que crea la sala es el host y su navegador hace de mesa. Funciona entre dispositivos en la misma red o desde cualquier lado, mientras los códigos se puedan pasar por mensaje.
+No hay servidor propio ni cuentas: el que crea la sala es el host y su navegador hace de mesa. Funciona entre celulares en la misma red o desde cualquier lado.
 
-1. El host toca **Crear sala** y después **Generar invitación**.
-2. Le pasa ese texto a un jugador. El jugador lo pega en **¿Te invitaron?**, pone su nombre y recibe un código de respuesta.
-3. El jugador le devuelve ese código al host, el host lo pega en **Pegar respuesta** y toca **Conectar jugador**.
+1. El host toca **Crear sala** y ve el código de 6 caracteres.
+2. Les pasa ese código (o toca **Copiar link**) al resto.
+3. Cada jugador pone su nombre, escribe el código de 6 caracteres en **¿Tenés un código?** y toca **Unirme**.
 
-Son dos mensajes por jugador: uno de ida y uno de vuelta. Es el precio de no depender de ningún servidor.
+Una vez que se conectan, toda la partida corre directo entre los navegadores por WebRTC.
 
 ## Cómo funciona
 

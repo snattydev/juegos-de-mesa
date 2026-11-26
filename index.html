@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F6F1E9" data-light="#F6F1E9" data-dark="#12110F">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="shared/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Juegos de mesa">
 <script src="shared/theme.js"></script>
 <title>🐴 Juegos de mesa — snatty</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%231B1917'/%3E%3Ctext x='50' y='68' font-family='Georgia,serif' font-size='46' fill='%23F6F1E9' text-anchor='middle'%3EJ%3C/text%3E%3C/svg%3E">
@@ -186,6 +192,7 @@
     if (!catalog || !Array.isArray(catalog.games) || !grid) return;
 
     var origin = null;
+    var activeSlug = null;
     var protocol = window.location.protocol;
 
     catalog.games.forEach(function (game) {
@@ -198,6 +205,7 @@
       link.style.setProperty("--mono-ink", game.monoInk);
       if (game.monoSize) link.style.setProperty("--mono-size", game.monoSize);
       link.dataset.intro = "1";
+      link.dataset.introSlug = game.slug;
       link.dataset.introTitle = game.title;
       link.dataset.introText = game.intro;
 
@@ -218,9 +226,12 @@
       link.appendChild(meta);
 
       link.addEventListener("click", function (event) {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (typeof catalog.hasSeenIntro === "function" && catalog.hasSeenIntro(game.slug)) return;
         if (!dialog || !go || typeof dialog.showModal !== "function") return;
         event.preventDefault();
         origin = link;
+        activeSlug = game.slug;
         title.textContent = game.title;
         text.textContent = game.intro;
         go.href = link.getAttribute("href");
@@ -230,6 +241,14 @@
 
       grid.appendChild(link);
     });
+
+    if (go) {
+      go.addEventListener("click", function () {
+        if (activeSlug && typeof catalog.markIntroSeen === "function") {
+          catalog.markIntroSeen(activeSlug);
+        }
+      });
+    }
 
     if (dialog) {
       dialog.addEventListener("click", function (event) {

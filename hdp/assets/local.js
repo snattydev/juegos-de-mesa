@@ -129,7 +129,7 @@ var HDP_BACKEND = (function () {
     state.room = created.room;
     state.hostToken = created.token;
     state.token = created.token;
-    state.net = NET.createHost({
+    state.net = NET.createHost(state.room.code, {
       onMessage: hostOnMessage,
       onPeers: function () {
         // Si un peer se cae, el jugador queda desconectado pero la sala sigue.
@@ -182,26 +182,34 @@ var HDP_BACKEND = (function () {
     }
   }
 
-  async function guestJoin(inviteCode, name) {
-    const guest = await NET.join(inviteCode, { onMessage: guestOnMessage });
+  async function guestJoin(roomCode, name) {
+    const displayName = String(name || "").trim();
+    if (!ENGINE.validName(displayName)) {
+      throw apiError("Nombre de 1 a 16 caracteres");
+    }
+
+    const guest = await NET.joinByCode(roomCode, { onMessage: guestOnMessage });
     if (guest.error) throw apiError(guest.error);
     state.role = "guest";
     state.guest = guest;
-    state.guestCode = guest.answerCode;
+    state.guestCode = guest.code;
 
-    const displayName = String(name || "").trim();
-    const announce = function () {
-      state.guest.send({ t: "join", name: displayName });
-    };
+    try {
+      await guest.ready;
+    } catch (e) {
+      if (state.guest === guest) {
+        state.guest = null;
+        state.role = null;
+      }
+      throw apiError(e && e.message ? e.message : "No se pudo conectar a la sala");
+    }
 
-    // El canal todavía no existe: se abre recién cuando el host pega la
-    // respuesta. Si mandamos el join ahora, se pierde.
-    guest.ready.then(function (channel) {
-      if (channel.readyState === "open") announce();
-      else channel.addEventListener("open", announce, { once: true });
-    });
+    if (state.guest !== guest) {
+      throw apiError("Conexión cancelada");
+    }
 
-    return { answer: guest.answerCode, ready: guest.ready };
+    guest.send({ t: "join", name: displayName });
+    return { code: guest.code };
   }
 
   function guestAct(path, body) {
@@ -246,8 +254,8 @@ var HDP_BACKEND = (function () {
     get snapshot() {
       return state.lastSnap;
     },
-    get answerCode() {
-      return state.guestCode;
+    get roomCode() {
+      return state.room ? state.room.code : state.guestCode;
     },
     get token() {
       return state.token;
@@ -257,8 +265,8 @@ var HDP_BACKEND = (function () {
       return Promise.resolve(hostCreate(String(name || "").trim()));
     },
 
-    join: function (inviteCode, name) {
-      return guestJoin(inviteCode, name);
+    join: function (roomCode, name) {
+      return guestJoin(roomCode, name);
     },
 
     // Misma firma que el viejo authed(): /api/<accion> + body.
@@ -271,19 +279,6 @@ var HDP_BACKEND = (function () {
     subscribe: function (fn) {
       state.onState = fn;
       if (state.lastSnap) fn(state.lastSnap);
-    },
-
-    // --- Señalización (la usa la UI) ---
-    invite: function () {
-      if (!state.net) return Promise.resolve(null);
-      return state.net.invite();
-    },
-    acceptAnswer: function (code) {
-      if (!state.net) return Promise.resolve({ error: "No sos el host" });
-      return state.net.acceptAnswer(code);
-    },
-    guestReady: function () {
-      return state.readyPromise || null;
     },
 
     // Engancha el invitado que está esperando al host.

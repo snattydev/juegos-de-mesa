@@ -73,6 +73,8 @@ const ROOT_FILES = [
   "shared/chrome.css",
   "shared/chrome.js",
   "scripts/serve.js",
+  "manifest.webmanifest",
+  "sw.js",
   ".githooks/commit-msg",
   ".githooks/pre-commit",
   "test/shared.test.js"
@@ -108,6 +110,8 @@ ok(htmlIndice.includes("shared/theme.js"), "index.html carga shared/theme.js");
 ok(htmlIndice.includes("shared/chrome.css"), "index.html carga shared/chrome.css");
 ok(htmlIndice.includes("shared/games.js"), "index.html carga shared/games.js");
 ok(htmlIndice.includes("shared/chrome.js"), "index.html carga shared/chrome.js");
+ok(htmlIndice.includes("manifest.webmanifest"), "index.html incluye manifest.webmanifest");
+ok(htmlIndice.includes("shared/icons/apple-touch-icon.png"), "index.html incluye shared/icons/apple-touch-icon.png");
 ok(htmlIndice.includes('id="gamesGrid"'), "index.html declara #gamesGrid");
 ok(htmlIndice.includes('id="introDialog"'), "index.html declara #introDialog");
 ok(htmlIndice.includes(CREDIT_HTML), "index.html tiene el footer credit exacto");
@@ -146,11 +150,71 @@ for (const juego of JUEGOS) {
   ok(!html.includes('id="hubFab"'), `${juego.slug}: sin botón #hubFab duplicado en HTML`);
   ok(/<html[^>]*\blang="es-AR"/.test(html), `${juego.slug}: declara lang="es-AR"`);
   ok(html.includes('rel="icon"'), `${juego.slug}: tiene favicon`);
+  ok(html.includes("../manifest.webmanifest"), `${juego.slug}: incluye ../manifest.webmanifest`);
+  ok(html.includes("../shared/icons/apple-touch-icon.png"), `${juego.slug}: incluye ../shared/icons/apple-touch-icon.png`);
   ok(html.includes(CREDIT_HTML), `${juego.slug}: tiene el footer credit exacto`);
   ok(html.includes('id="howDialog"'), `${juego.slug}: tiene diálogo #howDialog`);
 
   const mains = (html.match(/<main\b/g) || []).length;
   ok(mains === 1, `${juego.slug}: exactamente 1 <main>`, `encontré ${mains}`);
+}
+
+// PWA: manifest.webmanifest y sw.js
+{
+  const manifestPath = path.join(ROOT, "manifest.webmanifest");
+  let manifest;
+  try {
+    manifest = JSON.parse(leer(manifestPath));
+    ok(true, "manifest.webmanifest es JSON válido");
+  } catch (e) {
+    ok(false, "manifest.webmanifest es JSON válido", e.message);
+  }
+
+  if (manifest) {
+    ok(Boolean(manifest.name), "manifest declara name");
+    ok(Boolean(manifest.short_name), "manifest declara short_name");
+    ok(Boolean(manifest.start_url), "manifest declara start_url");
+    ok(manifest.display === "standalone", 'manifest display === "standalone"');
+    ok(Array.isArray(manifest.icons), "manifest.icons es un array");
+
+    if (Array.isArray(manifest.icons)) {
+      const has192 = manifest.icons.some(
+        (icon) => icon.sizes === "192x192" && (icon.type === "image/png" || /\.png$/i.test(icon.src))
+      );
+      const has512 = manifest.icons.some(
+        (icon) => icon.sizes === "512x512" && (icon.type === "image/png" || /\.png$/i.test(icon.src))
+      );
+      const hasMaskable = manifest.icons.some(
+        (icon) => icon.purpose && icon.purpose.includes("maskable")
+      );
+
+      ok(has192, "manifest tiene icono 192x192 PNG");
+      ok(has512, "manifest tiene icono 512x512 PNG");
+      ok(hasMaskable, "manifest tiene icono maskable");
+
+      for (const icon of manifest.icons) {
+        ok(fs.existsSync(path.join(ROOT, icon.src)), `manifest icono existe en disco: ${icon.src}`);
+      }
+    }
+  }
+
+  const swPath = path.join(ROOT, "sw.js");
+  const swCode = leer(swPath);
+  const matchUrls = swCode.match(/PRECACHE_URLS\s*=\s*\[([\s\S]*?)\]/);
+  ok(Boolean(matchUrls), "sw.js define PRECACHE_URLS");
+
+  if (matchUrls) {
+    const rawEntries = matchUrls[1];
+    const urls = [...rawEntries.matchAll(/["']([^"']+)["']/g)].map((m) => m[1]);
+    ok(urls.length > 0, "sw.js PRECACHE_URLS contiene rutas");
+
+    for (const rel of urls) {
+      const targetPath = rel.endsWith("/")
+        ? path.join(ROOT, rel, "index.html")
+        : path.join(ROOT, rel);
+      ok(fs.existsSync(targetPath), `sw.js precache existe en disco: ${rel}`);
+    }
+  }
 }
 
 /* ---------- 3. links de los README y AGENTS ---------- */

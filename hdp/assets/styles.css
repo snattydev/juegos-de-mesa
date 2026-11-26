@@ -290,6 +290,42 @@ button { font-family: inherit; color: inherit; }
 
 /* ---------- Lobby ---------- */
 
+.room-code-panel {
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-code-panel .panel-title {
+  margin: 0;
+}
+
+.room-code-value {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(2.1rem, 11vw, 3rem);
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--accent);
+  line-height: 1.1;
+  user-select: all;
+}
+
+.room-code-actions {
+  width: 100%;
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
 .players-panel {
   margin-top: 18px;
   padding: 18px 20px;

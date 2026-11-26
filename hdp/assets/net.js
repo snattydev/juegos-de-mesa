@@ -1,40 +1,49 @@
 "use strict";
 
 /*
- * Transporte P2P de HDP por WebRTC. Sin servidor y sin dependencias: el host
- * crea una oferta por jugador, se la pasa como texto, recibe la respuesta por
- * el mismo camino y desde ahí hablan por un data channel.
+ * Transporte P2P de HDP por WebRTC con código de sala de 6 caracteres.
+ * Sin servidor propio ni dependencias: el host crea la sala con su código de
+ * 6 caracteres y los invitados se conectan ingresando ese código.
  *
- * El código es un texto portable (se puede mandar por WhatsApp):
- *   invitación  HDI1.<peerId>.<base64url del SDP>
- *   respuesta   HDA1.<peerId>.<base64url del SDP>
+ * La señalización inicial (oferta/respuesta SDP) viaja por:
+ *   1. BroadcastChannel (instantáneo en el mismo navegador/origen).
+ *   2. Canal público HTTPS/SSE (ntfy.sh por defecto, configurable con
+ *      window.HDP_SIGNAL_URL) para conectar celulares distintos en WiFi o 4G/5G.
  *
- * Funciona en http:// sobre la LAN: no usa cámara ni micrófono, solo data
- * channels, que no requieren contexto seguro.
+ * Una vez establecido el WebRTC DataChannel, todo el juego corre P2P directo
+ * entre el host y cada jugador.
  */
 var HDP_NET = (function () {
-  const OFFER_PREFIX = "HDI1";
-  const ANSWER_PREFIX = "HDA1";
-  const GATHER_TIMEOUT_MS = 3000;
+  const ROOM_CODE_LENGTH = 6;
+  const ROOM_CODE_RE = /^[A-Z2-9]{6}$/;
+  const TOPIC_PREFIX = "jdm-hdp-v1-";
+  const GATHER_TIMEOUT_MS = 2500;
+  const SIGNAL_READY_TIMEOUT_MS = 900;
+  const JOIN_TIMEOUT_MS = 15000;
+  const ICE_SERVERS = [
+    { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
+  ];
+
+  function signalBase() {
+    if (typeof window !== "undefined" && typeof window.HDP_SIGNAL_URL === "string") {
+      return window.HDP_SIGNAL_URL.replace(/\/+$/, "");
+    }
+    return "https://ntfy.sh";
+  }
 
   /* ------------------------------------------------------------------ */
   /* Códigos                                                             */
   /* ------------------------------------------------------------------ */
 
-  function b64url(text) {
-    const bytes = new TextEncoder().encode(text);
-    let bin = "";
-    for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  function normalizeRoomCode(raw) {
+    return String(raw || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, ROOM_CODE_LENGTH);
   }
 
-  function unb64url(code) {
-    const norm = code.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = norm + "===".slice((norm.length + 3) % 4);
-    const bin = atob(pad);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return new TextDecoder().decode(bytes);
+  function isValidRoomCode(code) {
+    return ROOM_CODE_RE.test(normalizeRoomCode(code));
   }
 
   function randomId(len) {
@@ -50,27 +59,100 @@ var HDP_NET = (function () {
     return out;
   }
 
-  function parseCode(code) {
-    const parts = String(code || "").trim().split(".");
-    if (parts.length !== 3) return null;
-    if (parts[0] !== OFFER_PREFIX && parts[0] !== ANSWER_PREFIX) return null;
-    if (!/^[A-Z2-9]{6}$/.test(parts[1])) return null;
+  /* ------------------------------------------------------------------ */
+  /* Señalización                                                        */
+  /* ------------------------------------------------------------------ */
+
+  function hostTopic(roomCode) {
+    return TOPIC_PREFIX + roomCode + "-h";
+  }
+
+  function guestTopic(roomCode, peerId) {
+    return TOPIC_PREFIX + roomCode + "-g-" + peerId;
+  }
+
+  function openBroadcast(roomCode, onMessage) {
+    if (typeof BroadcastChannel !== "function") return null;
     try {
-      const data = JSON.parse(unb64url(parts[2]));
-      if (!data || typeof data.s !== "string" || typeof data.t !== "string") return null;
-      return { kind: parts[0], peerId: parts[1], description: data };
-    } catch (e) {
+      const bc = new BroadcastChannel(TOPIC_PREFIX + roomCode);
+      bc.onmessage = (event) => {
+        if (event && event.data && typeof event.data === "object") {
+          onMessage(event.data);
+        }
+      };
+      return bc;
+    } catch (_) {
       return null;
     }
   }
 
-  /* ------------------------------------------------------------------ */
-  /* SDP                                                                 */
-  /* ------------------------------------------------------------------ */
-
-  function sdpOf(pc) {
-    return JSON.stringify({ t: pc.localDescription.type, s: pc.localDescription.sdp });
+  function publishSignal(topic, payload) {
+    const base = signalBase();
+    if (!base || typeof fetch !== "function") return Promise.resolve();
+    return fetch(base + "/" + encodeURIComponent(topic), {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }).catch(() => {});
   }
+
+  function subscribeSignal(topic, onPayload, options) {
+    const base = signalBase();
+    const opts = options || {};
+    if (!base || typeof EventSource !== "function") {
+      return { ready: Promise.resolve(), close: () => {} };
+    }
+
+    const query = opts.since ? "?since=" + encodeURIComponent(opts.since) : "";
+    let es = null;
+    try {
+      es = new EventSource(base + "/" + encodeURIComponent(topic) + "/sse" + query);
+    } catch (_) {
+      return { ready: Promise.resolve(), close: () => {} };
+    }
+
+    const ready = new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve();
+      };
+      es.onopen = finish;
+      setTimeout(finish, SIGNAL_READY_TIMEOUT_MS);
+    });
+
+    es.onmessage = (event) => {
+      let envelope;
+      try {
+        envelope = JSON.parse(event.data);
+      } catch (_) {
+        return;
+      }
+      if (!envelope || envelope.event !== "message" || typeof envelope.message !== "string") {
+        return;
+      }
+      let payload;
+      try {
+        payload = JSON.parse(envelope.message);
+      } catch (_) {
+        return;
+      }
+      if (payload && typeof payload === "object") onPayload(payload);
+    };
+
+    return {
+      ready,
+      close: () => {
+        try {
+          es.close();
+        } catch (_) {}
+      },
+    };
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* ICE                                                                 */
+  /* ------------------------------------------------------------------ */
 
   function waitForIce(pc) {
     if (pc.iceGatheringState === "complete") return Promise.resolve();
@@ -86,8 +168,6 @@ var HDP_NET = (function () {
         if (pc.iceGatheringState === "complete") finish();
       };
       pc.addEventListener("icegatheringstatechange", check);
-      // Si la red es rara, seguimos con lo que haya: los candidatos host de la
-      // LAN suelen estar listos enseguida.
       setTimeout(finish, GATHER_TIMEOUT_MS);
     });
   }
@@ -96,21 +176,26 @@ var HDP_NET = (function () {
   /* Host                                                                */
   /* ------------------------------------------------------------------ */
 
-  function createHost(options) {
+  function createHost(roomCode, options) {
+    const code = normalizeRoomCode(roomCode);
     const handlers = options || {};
     const peers = new Map(); // peerId -> { pc, dc, open, meta }
+    const seenOffers = new Set();
+    let closed = false;
 
-    function makePeer(peerId) {
-      const pc = new RTCPeerConnection({ iceServers: [] });
-      const dc = pc.createDataChannel("hdp", { ordered: true });
-      const peer = { peerId, pc, dc, open: false, meta: {} };
-      peers.set(peerId, peer);
-
-      dc.onopen = () => {
+    function attachChannel(peer, dc) {
+      peer.dc = dc;
+      const markOpen = () => {
+        if (peer.open) return;
         peer.open = true;
         if (handlers.onOpen) handlers.onOpen(peer);
         if (handlers.onPeers) handlers.onPeers(peers);
       };
+      if (dc.readyState === "open") {
+        markOpen();
+      } else {
+        dc.onopen = markOpen;
+      }
       dc.onclose = () => {
         peer.open = false;
         if (handlers.onClose) handlers.onClose(peer);
@@ -120,11 +205,27 @@ var HDP_NET = (function () {
         let msg;
         try {
           msg = JSON.parse(event.data);
-        } catch (e) {
+        } catch (_) {
           return;
         }
         if (handlers.onMessage) handlers.onMessage(peer, msg);
       };
+    }
+
+    async function handleOffer(msg) {
+      if (closed || !msg || msg.t !== "offer") return;
+      if (typeof msg.peerId !== "string" || typeof msg.sdp !== "string") return;
+      if (seenOffers.has(msg.peerId)) return;
+      seenOffers.add(msg.peerId);
+
+      const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+      const peer = { peerId: msg.peerId, pc, dc: null, open: false, meta: {} };
+      peers.set(msg.peerId, peer);
+
+      pc.ondatachannel = (event) => {
+        attachChannel(peer, event.channel);
+      };
+
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
           peer.open = false;
@@ -132,33 +233,30 @@ var HDP_NET = (function () {
           if (handlers.onPeers) handlers.onPeers(peers);
         }
       };
-      return peer;
-    }
 
-    // Crea un peer nuevo y devuelve el código para pasarle al invitado.
-    async function invite() {
-      const peerId = randomId(6);
-      const peer = makePeer(peerId);
-      await peer.pc.setLocalDescription(await peer.pc.createOffer());
-      await waitForIce(peer.pc);
-      return { peerId, code: OFFER_PREFIX + "." + peerId + "." + b64url(sdpOf(peer.pc)) };
-    }
-
-    // Recibe el código de respuesta que devolvió el invitado.
-    async function acceptAnswer(code) {
-      const parsed = parseCode(code);
-      if (!parsed) return { error: "El código no parece una respuesta" };
-      if (parsed.kind !== ANSWER_PREFIX) return { error: "Eso es una invitación, no una respuesta" };
-      const peer = peers.get(parsed.peerId);
-      if (!peer) return { error: "Ese código no es de esta sesión (o ya lo usaste)" };
-      if (peer.pc.signalingState !== "have-local-offer") return { error: "Ese jugador ya está conectado" };
       try {
-        await peer.pc.setRemoteDescription({ type: parsed.description.t, sdp: parsed.description.s });
-      } catch (e) {
-        return { error: "No se pudo conectar: " + e.message };
+        await pc.setRemoteDescription({ type: "offer", sdp: msg.sdp });
+        await pc.setLocalDescription(await pc.createAnswer());
+        await waitForIce(pc);
+        if (closed) return;
+        const answerPayload = {
+          t: "answer",
+          peerId: msg.peerId,
+          sdp: pc.localDescription.sdp,
+        };
+        if (bc) {
+          try {
+            bc.postMessage(answerPayload);
+          } catch (_) {}
+        }
+        publishSignal(guestTopic(code, msg.peerId), answerPayload);
+      } catch (_) {
+        drop(msg.peerId);
       }
-      return { ok: true, peerId: peer.peerId };
     }
+
+    const bc = openBroadcast(code, handleOffer);
+    const sub = subscribeSignal(hostTopic(code), handleOffer);
 
     function send(peer, msg) {
       if (!peer || !peer.dc || peer.dc.readyState !== "open") return false;
@@ -176,64 +274,68 @@ var HDP_NET = (function () {
       const peer = peers.get(peerId);
       if (!peer) return;
       try {
-        peer.dc.close();
+        if (peer.dc) peer.dc.close();
         peer.pc.close();
-      } catch (e) {}
+      } catch (_) {}
       peers.delete(peerId);
       if (handlers.onPeers) handlers.onPeers(peers);
     }
 
     function close() {
+      closed = true;
+      sub.close();
+      if (bc) {
+        try {
+          bc.close();
+        } catch (_) {}
+      }
       for (const peerId of [...peers.keys()]) drop(peerId);
     }
 
-    return { peers, invite, acceptAnswer, send, broadcast, drop, close };
+    return { code, peers, ready: sub.ready, send, broadcast, drop, close };
   }
 
   /* ------------------------------------------------------------------ */
   /* Invitado                                                            */
   /* ------------------------------------------------------------------ */
 
-  async function join(code, options) {
+  async function joinByCode(roomCode, options) {
+    const code = normalizeRoomCode(roomCode);
+    if (!isValidRoomCode(code)) {
+      return { error: "El código tiene que tener 6 caracteres" };
+    }
+
     const handlers = options || {};
-    const parsed = parseCode(code);
-    if (!parsed) return { error: "El código no parece una invitación" };
-    if (parsed.kind !== OFFER_PREFIX) return { error: "Eso es una respuesta, no una invitación" };
+    const peerId = randomId(6);
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const channel = pc.createDataChannel("hdp", { ordered: true });
+    let answered = false;
+    let cleanedUp = false;
 
-    const pc = new RTCPeerConnection({ iceServers: [] });
-    let channel = null;
-    const ready = new Promise((resolve) => {
-      pc.ondatachannel = (event) => {
-        channel = event.channel;
-        attachChannel(channel);
-        resolve(channel);
-      };
-    });
-
-    function attachChannel(dc) {
-      dc.onmessage = (event) => {
-        let msg;
+    function cleanupSignaling() {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      sub.close();
+      if (bc) {
         try {
-          msg = JSON.parse(event.data);
-        } catch (e) {
-          return;
-        }
-        if (handlers.onMessage) handlers.onMessage(msg);
-      };
-      dc.onclose = () => {
-        if (handlers.onClose) handlers.onClose();
-      };
+          bc.close();
+        } catch (_) {}
+      }
     }
 
-    try {
-      await pc.setRemoteDescription({ type: parsed.description.t, sdp: parsed.description.s });
-      await pc.setLocalDescription(await pc.createAnswer());
-    } catch (e) {
-      return { error: "No se pudo preparar la conexión: " + e.message };
-    }
+    channel.onmessage = (event) => {
+      let msg;
+      try {
+        msg = JSON.parse(event.data);
+      } catch (_) {
+        return;
+      }
+      if (handlers.onMessage) handlers.onMessage(msg);
+    };
 
-    await waitForIce(pc);
-    const answerCode = ANSWER_PREFIX + "." + parsed.peerId + "." + b64url(sdpOf(pc));
+    channel.onclose = () => {
+      if (handlers.onClose) handlers.onClose();
+    };
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
@@ -241,33 +343,101 @@ var HDP_NET = (function () {
       }
     };
 
+    async function handleAnswer(msg) {
+      if (answered || !msg || msg.t !== "answer") return;
+      if (msg.peerId !== peerId || typeof msg.sdp !== "string") return;
+      if (pc.signalingState !== "have-local-offer") return;
+      answered = true;
+      try {
+        await pc.setRemoteDescription({ type: "answer", sdp: msg.sdp });
+      } catch (_) {
+        answered = false;
+      }
+    }
+
+    const bc = openBroadcast(code, handleAnswer);
+    const sub = subscribeSignal(guestTopic(code, peerId), handleAnswer, { since: "10s" });
+
+    const ready = new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        cleanupSignaling();
+        try {
+          channel.close();
+          pc.close();
+        } catch (_) {}
+        reject(new Error("No encontramos esa sala. Revisá el código de 6 caracteres."));
+      }, JOIN_TIMEOUT_MS);
+
+      const onOpen = () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        cleanupSignaling();
+        resolve(channel);
+      };
+
+      if (channel.readyState === "open") {
+        onOpen();
+      } else {
+        channel.onopen = onOpen;
+      }
+    });
+
+    try {
+      await pc.setLocalDescription(await pc.createOffer());
+      await Promise.all([waitForIce(pc), sub.ready]);
+    } catch (e) {
+      cleanupSignaling();
+      try {
+        channel.close();
+        pc.close();
+      } catch (_) {}
+      return { error: "No se pudo preparar la conexión: " + e.message };
+    }
+
+    const offerPayload = {
+      t: "offer",
+      peerId,
+      sdp: pc.localDescription.sdp,
+    };
+
+    if (bc) {
+      try {
+        bc.postMessage(offerPayload);
+      } catch (_) {}
+    }
+    publishSignal(hostTopic(code), offerPayload);
+
     return {
+      code,
+      peerId,
       pc,
-      answerCode,
-      // El canal no existe hasta que el host pega la respuesta: esperalo con esto.
+      channel,
       ready,
-      get channel() {
-        return channel;
-      },
       send: (msg) => {
         if (!channel || channel.readyState !== "open") return false;
         channel.send(JSON.stringify(msg));
         return true;
       },
       close: () => {
+        cleanupSignaling();
         try {
-          if (channel) channel.close();
+          channel.close();
           pc.close();
-        } catch (e) {}
+        } catch (_) {}
       },
     };
   }
 
   return {
+    ROOM_CODE_LENGTH,
+    normalizeRoomCode,
+    isValidRoomCode,
     createHost,
-    join,
-    parseCode,
+    joinByCode,
     randomId,
-    sdpLength: (code) => String(code || "").length,
   };
 })();
