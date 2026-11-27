@@ -5,9 +5,9 @@ Juego multijugador P2P sin servidor ni build (WebRTC data channels). Se abre `in
 ## Estructura
 
 - `index.html`: vistas (inicio, lobby, ronda, juez, judging, reveal, final y diálogo "Cómo se juega"). Solo oscuro (`data-theme-mode="dark-only"`). Carga `../shared/chrome.css` y `../shared/chrome.js`.
-- `assets/engine.js`: motor puro del juego (`HDP_ENGINE`). Sin DOM, red ni disco.
+- `assets/engine.js`: motor puro del juego (`HDP_ENGINE`). Sin DOM, red ni disco. Maneja reposición en el lugar (máx. 10 cartas) y tiempo de ronda autoritativo.
 - `assets/net.js`: transporte WebRTC con código de sala de 6 caracteres y señalización automática (`BroadcastChannel` + canal HTTPS/SSE `ntfy.sh`) (`HDP_NET`).
-- `assets/local.js`: adaptador `/api/*` sobre `HDP_ENGINE` y `HDP_NET` (`HDP_BACKEND`).
+- `assets/local.js`: adaptador `/api/*` sobre `HDP_ENGINE` y `HDP_NET` (`HDP_BACKEND`), incluyendo el programador del timer de ronda en el host.
 - `assets/app.js` y `assets/styles.css`: interfaz nocturna fija.
 - `data/cards.js`: 74 cartas negras (`pick` 1 o 2) y 244 blancas (`HDP_DATA` / `HDP_CARDS`).
 - `test/game.test.js`: pruebas del mazo y partida completa contra `engine.js`.

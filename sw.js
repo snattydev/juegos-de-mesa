@@ -1,5 +1,5 @@
 // Root Service Worker for Juegos de Mesa (PWA offline support)
-const CACHE_NAME = "juegos-de-mesa-v2";
+const CACHE_NAME = "juegos-de-mesa-v3";
 const FONT_CACHE = "juegos-de-mesa-fonts-v1";
 
 const PRECACHE_URLS = [

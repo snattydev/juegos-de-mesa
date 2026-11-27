@@ -241,7 +241,7 @@ async function run() {
       await context.close();
     });
 
-    await test("hdp: genera código de 6 caracteres, valida formato y precarga ?sala=", async () => {
+    await test("hdp: UX de código vs link ?sala= (unirse con un paso), timer por defecto 30s", async () => {
       const context = await browser.newContext(MOBILE_CONTEXT);
       await context.addInitScript((url) => {
         window.HDP_SIGNAL_URL = url;
@@ -250,34 +250,57 @@ async function run() {
       const page = await context.newPage();
       await page.goto(baseUrl + "/hdp/", { waitUntil: "domcontentloaded" });
 
+      // Cambiar a "Tengo un código" oculta la acción de crear y deja un solo botón principal.
+      await page.click("#modeJoinBtn");
+      await page.locator("#codeField").waitFor({ state: "visible" });
+      assert.equal(await page.locator("#homeSubmitBtn").textContent(), "Unirme a la sala");
+
       // Código corto inválido muestra toast de error.
       await page.fill("#nameInput", "Sofi");
       await page.fill("#codeInput", "ab1");
-      await page.click("#joinBtn");
+      await page.click("#homeSubmitBtn");
       await page.waitForFunction(() => {
         const t = document.getElementById("toast");
         return t && t.getAttribute("data-show") === "true" && t.textContent.includes("6 caracteres");
       });
 
-      // Crear sala genera código de 6 caracteres visibles en lobby.
+      // Volver a "Crear sala" oculta el código y crea una sala con timer de 30s por defecto.
+      await page.click("#modeCreateBtn");
+      await page.locator("#codeField").waitFor({ state: "hidden" });
+      assert.equal(await page.locator("#homeSubmitBtn").textContent(), "Crear sala");
       await page.fill("#nameInput", "Sofi");
-      await page.click('#createForm button[type="submit"]');
+      await page.click("#homeSubmitBtn");
       await page.locator("#viewLobby").waitFor({ state: "visible" });
 
       const code = (await page.locator("#roomCodeValue").textContent()).trim();
       assert.match(code, /^[A-Z2-9]{6}$/, `código inválido: ${code}`);
+      assert.equal(
+        await page.locator('#roundTimerGroup .seg-btn[data-seconds="30"]').getAttribute("aria-checked"),
+        "true"
+      );
+      assert.ok((await page.locator("#lobbyRules").textContent()).includes("30s"));
 
-      // Abrir link ?sala=<CODE> precarga el input en mayúsculas.
+      // Abrir link ?sala=<CODE> entra en modo invitación: sin selector crear/unirse ni campo de código.
       const linkPage = await context.newPage();
       await linkPage.goto(baseUrl + "/hdp/?sala=" + code.toLowerCase(), {
         waitUntil: "domcontentloaded",
       });
-      assert.equal(await linkPage.locator("#codeInput").inputValue(), code);
+      await linkPage.locator("#inviteBanner").waitFor({ state: "visible" });
+      assert.equal((await linkPage.locator("#inviteCodeValue").textContent()).trim(), code);
+      assert.equal(await linkPage.locator("#homeModeSwitch").isVisible(), false);
+      assert.equal(await linkPage.locator("#codeField").isVisible(), false);
+      assert.equal(await linkPage.locator("#homeSubmitBtn").textContent(), "Unirme a la sala");
+
+      // "Crear otra sala" vuelve al inicio normal y limpia ?sala= de la URL.
+      await linkPage.click("#exitInviteBtn");
+      await linkPage.locator("#homeModeSwitch").waitFor({ state: "visible" });
+      assert.equal(await linkPage.locator("#inviteBanner").isVisible(), false);
+      assert.equal(new URL(linkPage.url()).searchParams.has("sala"), false);
 
       await context.close();
     });
 
-    await test("hdp: 3 celulares aislados se conectan con código de 6 caracteres y juegan una ronda WebRTC", async () => {
+    await test("hdp: 3 celulares aislados (link directo + código), timer visible y reposición en el lugar", async () => {
       const makeMobileContext = async () => {
         const ctx = await browser.newContext(MOBILE_CONTEXT);
         await ctx.addInitScript((url) => {
@@ -298,30 +321,31 @@ async function run() {
         await Promise.all([
           hostPage.goto(baseUrl + "/hdp/", { waitUntil: "domcontentloaded" }),
           g1Page.goto(baseUrl + "/hdp/", { waitUntil: "domcontentloaded" }),
-          g2Page.goto(baseUrl + "/hdp/", { waitUntil: "domcontentloaded" }),
         ]);
 
         // Host crea sala y obtiene código de 6 caracteres.
         await hostPage.fill("#nameInput", "Sofi");
-        await hostPage.click('#createForm button[type="submit"]');
+        await hostPage.click("#homeSubmitBtn");
         await hostPage.locator("#viewLobby").waitFor({ state: "visible" });
         const roomCode = (await hostPage.locator("#roomCodeValue").textContent()).trim();
         assert.match(roomCode, /^[A-Z2-9]{6}$/);
 
-        // Invitado 1 entra escribiendo el código en minúsculas.
-        await g1Page.fill("#nameInput", "Mateo");
+        // Invitado 1 entra por pestaña "Tengo un código" escribiendo en minúsculas.
+        await g1Page.click("#modeJoinBtn");
         await g1Page.fill("#codeInput", roomCode.toLowerCase());
         assert.equal(await g1Page.locator("#codeInput").inputValue(), roomCode);
-        await g1Page.click("#joinBtn");
+        await g1Page.fill("#nameInput", "Mateo");
+        await g1Page.click("#homeSubmitBtn");
+        await g1Page.locator("#viewLobby").waitFor({ state: "visible", timeout: 12000 });
 
-        // Invitado 2 entra con el mismo código.
+        // Invitado 2 abre el link ?sala=<CODE>: solo pone su nombre y aprieta Enter.
+        await g2Page.goto(baseUrl + "/hdp/?sala=" + roomCode, { waitUntil: "domcontentloaded" });
+        await g2Page.locator("#inviteBanner").waitFor({ state: "visible" });
         await g2Page.fill("#nameInput", "Luli");
-        await g2Page.fill("#codeInput", roomCode);
-        await g2Page.click("#joinBtn");
+        await g2Page.press("#nameInput", "Enter");
 
         // Todos llegan al lobby con 3 jugadores.
         await Promise.all([
-          g1Page.locator("#viewLobby").waitFor({ state: "visible", timeout: 12000 }),
           g2Page.locator("#viewLobby").waitFor({ state: "visible", timeout: 12000 }),
           hostPage.waitForFunction(
             () => document.getElementById("playerCount")?.textContent === "3",
@@ -333,30 +357,52 @@ async function run() {
         // Host arranca la partida.
         await hostPage.click("#startBtn");
 
-        // Host es juez; invitados ven sus 10 cartas blancas.
+        // Host es juez; invitados ven sus 10 cartas blancas y el timer de 30s.
         await Promise.all([
           hostPage.locator("#viewJudge").waitFor({ state: "visible" }),
           g1Page.locator("#viewRound").waitFor({ state: "visible" }),
           g2Page.locator("#viewRound").waitFor({ state: "visible" }),
         ]);
 
+        await Promise.all([
+          hostPage.locator("#judgeTimer").waitFor({ state: "visible" }),
+          g1Page.locator("#roundTimer").waitFor({ state: "visible" }),
+          g2Page.locator("#roundTimer").waitFor({ state: "visible" }),
+        ]);
+
+        const judgeSec = parseInt(await hostPage.locator("#judgeTimerText").textContent(), 10);
+        const guestSec = parseInt(await g2Page.locator("#roundTimerText").textContent(), 10);
+        assert.ok(judgeSec > 0 && judgeSec <= 30, `timer juez fuera de rango: ${judgeSec}`);
+        assert.ok(guestSec > 0 && guestSec <= 30, `timer invitado fuera de rango: ${guestSec}`);
+
         assert.equal(await g1Page.locator("#hand .white-card").count(), 10);
         assert.equal(await g2Page.locator("#hand .white-card").count(), 10);
 
-        // Determinar cuántas cartas pide la carta negra (1 o 2) y jugar en ambos invitados.
-        async function submitCards(page) {
+        // Guardar mano de Ronda 1 de Luli (g2) antes de jugar slots del medio.
+        const g2HandRound1 = await g2Page.evaluate(() =>
+          [...document.querySelectorAll("#hand .white-card")].map((el) => el.dataset.id)
+        );
+        const g2Pick = await g2Page.evaluate(() => {
+          const strong = document.querySelector("#roundInstruction strong");
+          return strong ? Number(strong.textContent) : 1;
+        });
+        const g2PlayedSlots = g2Pick === 1 ? [2] : [2, 5];
+
+        // Jugar cartas en ambos invitados.
+        async function submitCards(page, slots) {
           const pick = await page.evaluate(() => {
             const strong = document.querySelector("#roundInstruction strong");
             return strong ? Number(strong.textContent) : 1;
           });
           for (let i = 0; i < pick; i++) {
-            await page.locator("#hand .white-card").nth(i).click();
+            const idx = slots ? slots[i] : i;
+            await page.locator("#hand .white-card").nth(idx).click();
           }
           await page.click("#playBtn");
         }
 
         await submitCards(g1Page);
-        await submitCards(g2Page);
+        await submitCards(g2Page, g2PlayedSlots);
 
         // Host pasa automáticamente a #viewJudging con 2 respuestas anónimas.
         await hostPage.locator("#viewJudging").waitFor({ state: "visible", timeout: 10000 });
@@ -372,6 +418,37 @@ async function run() {
         ]);
 
         assert.equal(await hostPage.locator('#revealChoices .choice[data-winner="true"]').count(), 1);
+
+        // Avanzar a Ronda 2: Mateo pasa a juez; Sofi y Luli ven su mano renovada solo en los slots jugados.
+        await hostPage.click("#nextBtn");
+        await Promise.all([
+          hostPage.locator("#viewRound").waitFor({ state: "visible", timeout: 10000 }),
+          g1Page.locator("#viewJudge").waitFor({ state: "visible", timeout: 10000 }),
+          g2Page.locator("#viewRound").waitFor({ state: "visible", timeout: 10000 }),
+        ]);
+
+        const g2HandRound2 = await g2Page.evaluate(() =>
+          [...document.querySelectorAll("#hand .white-card")].map((el) => ({
+            id: el.dataset.id,
+            isNew: el.dataset.new === "true",
+            hasBadge: Boolean(el.querySelector(".card-new")),
+          }))
+        );
+        assert.equal(g2HandRound2.length, 10);
+        for (let i = 0; i < 10; i++) {
+          if (g2PlayedSlots.includes(i)) {
+            assert.notEqual(g2HandRound2[i].id, g2HandRound1[i], `slot ${i} no se renovó`);
+            assert.equal(g2HandRound2[i].isNew, true, `slot ${i} debería marcarse nueva`);
+            assert.equal(g2HandRound2[i].hasBadge, true, `slot ${i} debería mostrar badge Nueva`);
+          } else {
+            assert.equal(g2HandRound2[i].id, g2HandRound1[i], `slot ${i} se movió o cambió`);
+            assert.equal(g2HandRound2[i].isNew, false, `slot ${i} no debería marcarse nueva`);
+          }
+        }
+
+        // Host (ex juez) conserva 10 cartas sin ninguna marcada como nueva.
+        assert.equal(await hostPage.locator('#hand .white-card[data-new="true"]').count(), 0);
+        assert.equal(await hostPage.locator("#hand .white-card").count(), 10);
       } finally {
         await hostCtx.close();
         await g1Ctx.close();
