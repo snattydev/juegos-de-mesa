@@ -24,6 +24,7 @@ var HDP_BACKEND = (function () {
     onState: null,
     pending: new Map(), // id -> {resolve, reject}
     seq: 0,
+    roundTimer: null,
   };
 
   const peersByToken = new Map(); // token -> peer
@@ -57,14 +58,46 @@ var HDP_BACKEND = (function () {
   /* Host                                                                */
   /* ------------------------------------------------------------------ */
 
+  function clearRoundTimer() {
+    if (state.roundTimer) {
+      clearTimeout(state.roundTimer);
+      state.roundTimer = null;
+    }
+  }
+
+  function syncRoundTimer() {
+    clearRoundTimer();
+    if (
+      state.role !== "host" ||
+      !state.room ||
+      state.room.phase !== "playing" ||
+      state.room.roundEndsAt === null
+    ) {
+      return;
+    }
+    const delay = Math.max(0, state.room.roundEndsAt - Date.now()) + 20;
+    state.roundTimer = setTimeout(function () {
+      state.roundTimer = null;
+      if (!state.room || state.room.phase !== "playing" || state.room.roundEndsAt === null) return;
+      if (state.room.roundEndsAt - Date.now() > 0) {
+        syncRoundTimer();
+        return;
+      }
+      const res = ENGINE.apply(state.room, state.hostToken, "timeout", { now: Date.now() });
+      if (res && res.ok) broadcastStates();
+    }, delay);
+  }
+
   // Manda a cada jugador su propio estado.
   function broadcastStates() {
     if (!state.room) return;
+    const now = Date.now();
     for (const [token, peer] of peersByToken) {
-      const snap = ENGINE.snapshotFor(state.room, token);
+      const snap = ENGINE.snapshotFor(state.room, token, now);
       if (snap) state.net.send(peer, { t: "state", snap });
     }
-    if (state.hostToken) emit(ENGINE.snapshotFor(state.room, state.hostToken));
+    if (state.hostToken) emit(ENGINE.snapshotFor(state.room, state.hostToken, now));
+    syncRoundTimer();
   }
 
   function hostOnMessage(peer, msg) {
@@ -76,7 +109,7 @@ var HDP_BACKEND = (function () {
         // Reconexión del mismo peer: le devolvemos su token.
         const token = tokensByPeer.get(peer.peerId);
         state.net.send(peer, { t: "hello", token });
-        const snap = ENGINE.snapshotFor(room, token);
+        const snap = ENGINE.snapshotFor(room, token, Date.now());
         if (snap) state.net.send(peer, { t: "state", snap });
         return;
       }
@@ -142,8 +175,9 @@ var HDP_BACKEND = (function () {
 
   function hostAct(path, body) {
     const action = actionFromPath(path);
-    if (action === "state") return Promise.resolve(ENGINE.snapshotFor(state.room, state.token));
+    if (action === "state") return Promise.resolve(ENGINE.snapshotFor(state.room, state.token, Date.now()));
     if (action === "leave") {
+      clearRoundTimer();
       if (state.net) state.net.close();
       state.room = null;
       return Promise.resolve({ ok: true });
@@ -288,11 +322,12 @@ var HDP_BACKEND = (function () {
     },
 
     reset: function () {
+      clearRoundTimer();
       if (state.net) state.net.close();
       if (state.guest) state.guest.close();
       Object.assign(state, {
         role: null, room: null, hostToken: null, token: null,
-        net: null, guest: null, guestCode: null, lastSnap: null,
+        net: null, guest: null, guestCode: null, lastSnap: null, roundTimer: null,
       });
       peersByToken.clear();
       tokensByPeer.clear();

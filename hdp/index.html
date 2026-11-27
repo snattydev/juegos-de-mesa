@@ -35,24 +35,36 @@
       <p class="kicker">Juego de cartas</p>
       <h1 class="wordmark">HDP</h1>
       <p class="tagline">Hasta donde puedas.</p>
-      <p class="lead">Completá frases con las cartas más zarpadas. El juez elige la más graciosa y gana quien junta más puntos.</p>
+      <p class="lead" id="homeLead">Completá frases con las cartas más zarpadas. El juez elige la más graciosa y gana quien junta más puntos.</p>
 
-      <form class="home-form" id="createForm">
-        <label class="field-label" for="nameInput">Tu nombre</label>
-        <input class="input" id="nameInput" name="name" maxlength="16" autocomplete="nickname" placeholder="¿Cómo te dicen?" required>
-        <button class="btn btn-primary btn-xl" type="submit">Crear sala</button>
-      </form>
+      <div class="segmented home-mode" id="homeModeSwitch" role="radiogroup" aria-label="Cómo querés entrar">
+        <button class="seg-btn" id="modeCreateBtn" type="button" role="radio" data-mode="create" aria-checked="true">Crear sala</button>
+        <button class="seg-btn" id="modeJoinBtn" type="button" role="radio" data-mode="join" aria-checked="false">Tengo un código</button>
+      </div>
 
-      <form class="home-form home-join" id="joinForm">
-        <label class="field-label" for="codeInput">¿Tenés un código?</label>
-        <div class="join-row">
+      <div class="invite-banner" id="inviteBanner" hidden>
+        <span class="panel-title">Te invitaron a la sala</span>
+        <div class="invite-code" id="inviteCodeValue" aria-live="polite">------</div>
+        <p class="invite-hint">Poné tu nombre para entrar directo.</p>
+      </div>
+
+      <form class="home-form" id="homeForm" novalidate>
+        <div class="field-group" id="codeField" hidden>
+          <label class="field-label" for="codeInput">Código de sala</label>
           <input class="input input-code" id="codeInput" name="code" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text" placeholder="ABC123" aria-label="Código de sala de 6 caracteres">
-          <button class="btn btn-ghost" id="joinBtn" type="submit">Unirme</button>
         </div>
+
+        <div class="field-group">
+          <label class="field-label" for="nameInput">Tu nombre</label>
+          <input class="input" id="nameInput" name="name" maxlength="16" autocomplete="nickname" enterkeyhint="go" placeholder="¿Cómo te dicen?">
+        </div>
+
+        <button class="btn btn-primary btn-xl" id="homeSubmitBtn" type="submit">Crear sala</button>
+        <button class="btn btn-ghost" id="exitInviteBtn" type="button" hidden>Crear otra sala</button>
       </form>
 
-      <button class="btn btn-ghost" id="howBtn" type="button">Cómo se juega</button>
-      <p class="home-note">Un celular crea la sala y los demás entran con un código de 6 caracteres, sin cuentas.</p>
+      <button class="btn btn-ghost home-how" id="howBtn" type="button">Cómo se juega</button>
+      <p class="home-note">Un celular crea la sala y los demás entran con el link o un código de 6 caracteres, sin cuentas.</p>
       <p class="credit">Proyecto hobby hecho con amor por <strong>snatty</strong>.</p>
     </main>
 
@@ -74,12 +86,22 @@
       <div class="players-panel">
         <h3 class="panel-title">Jugadores (<span id="playerCount">0</span>/12)</h3>
         <ul class="players-list" id="playersList"></ul>
+        <p class="lobby-rules" id="lobbyRules"></p>
       </div>
 
       <div class="lobby-host" id="lobbyHost" hidden>
         <div class="settings-row">
           <label class="field-label" for="targetInput">Puntos para ganar</label>
           <input class="input input-num" id="targetInput" type="number" min="3" max="10" value="5" aria-label="Puntos necesarios para ganar">
+        </div>
+        <div class="settings-row settings-row-stack">
+          <span class="field-label" id="timerSettingLabel">Tiempo por ronda</span>
+          <div class="segmented segmented-4" id="roundTimerGroup" role="radiogroup" aria-labelledby="timerSettingLabel">
+            <button class="seg-btn" type="button" role="radio" data-seconds="15" aria-checked="false">15s</button>
+            <button class="seg-btn" type="button" role="radio" data-seconds="20" aria-checked="false">20s</button>
+            <button class="seg-btn" type="button" role="radio" data-seconds="30" aria-checked="true">30s</button>
+            <button class="seg-btn" type="button" role="radio" data-seconds="0" aria-checked="false">Libre</button>
+          </div>
         </div>
         <button class="btn btn-primary btn-xl" id="startBtn" type="button">Empezar</button>
         <p class="hint" id="startHint">Se necesitan al menos 3 jugadores.</p>
@@ -90,7 +112,16 @@
 
     <!-- RONDA (jugando, no juez) -->
     <section class="view" id="viewRound" hidden>
-      <p class="kicker">Ronda <span id="roundNum">1</span></p>
+      <div class="round-head">
+        <p class="kicker">Ronda <span id="roundNum">1</span></p>
+        <span class="round-timer" id="roundTimer" hidden aria-live="off">
+          <span class="round-timer-dot" aria-hidden="true"></span>
+          <span id="roundTimerText">30s</span>
+        </span>
+      </div>
+      <div class="timer-bar" id="roundTimerBar" hidden aria-hidden="true">
+        <div class="timer-bar-fill" id="roundTimerFill"></div>
+      </div>
       <div class="black-card" id="blackCard"></div>
       <p class="round-instruction" id="roundInstruction"></p>
       <div class="hand" id="hand" role="listbox" aria-label="Tu mano de cartas blancas"></div>
@@ -101,7 +132,16 @@
 
     <!-- JUEZ (jugando, esperando envíos) -->
     <section class="view" id="viewJudge" hidden>
-      <p class="kicker">Sos el juez</p>
+      <div class="round-head">
+        <p class="kicker">Sos el juez · Ronda <span id="judgeRoundNum">1</span></p>
+        <span class="round-timer" id="judgeTimer" hidden aria-live="off">
+          <span class="round-timer-dot" aria-hidden="true"></span>
+          <span id="judgeTimerText">30s</span>
+        </span>
+      </div>
+      <div class="timer-bar" id="judgeTimerBar" hidden aria-hidden="true">
+        <div class="timer-bar-fill" id="judgeTimerFill"></div>
+      </div>
       <div class="black-card" id="judgeBlackCard"></div>
       <p class="round-instruction">Los demás están eligiendo sus cartas. Leé la frase en voz alta.</p>
       <div class="wait-panel">
@@ -158,7 +198,7 @@
     <ol class="steps">
       <li><strong>Uno crea la sala</strong> y el resto entra con el código de 6 caracteres. De 3 a 12 personas.</li>
       <li><strong>Cada ronda, uno es el juez</strong> y lee la frase en voz alta.</li>
-      <li><strong>Todos eligen cartas de su mano</strong> para completar la frase del modo más gracioso posible.</li>
+      <li><strong>Todos eligen cartas de su mano</strong> (10 cartas, con 30s por ronda por defecto) para completar la frase. En la siguiente ronda solo se renuevan las que usaste.</li>
       <li><strong>El juez elige la que más le gusta</strong> sin saber de quién es. Quien la jugó suma un punto.</li>
       <li><strong>El juez va rotando</strong> y gana quien primero junta los puntos acordados.</li>
     </ol>

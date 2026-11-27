@@ -27,6 +27,9 @@
   const DEFAULT_TARGET = 5;
   const MIN_TARGET = 3;
   const MAX_TARGET = 10;
+  const DEFAULT_ROUND_SECONDS = 30;
+  const MIN_ROUND_SECONDS = 10;
+  const MAX_ROUND_SECONDS = 60;
 
   /* ------------------------------------------------------------------ */
   /* Utilidades                                                          */
@@ -98,11 +101,14 @@
     const token = newToken();
     const room = {
       code: newRoomCode(null),
-      players: new Map([[token, { token, name: hostName, hand: [], score: 0, connected: true }]]),
+      players: new Map([[token, { token, name: hostName, hand: [], newCardIds: [], score: 0, connected: true }]]),
       hostId: token,
       judgeId: token,
       phase: "lobby",
       targetScore: DEFAULT_TARGET,
+      roundSeconds: DEFAULT_ROUND_SECONDS,
+      roundEndsAt: null,
+      timedOut: false,
       round: 0,
       blackCard: null,
       blackDeck: [],
@@ -122,7 +128,7 @@
     if (room.phase !== "lobby") return { error: "La partida ya empezó", status: 409 };
     if (room.players.size >= MAX_PLAYERS) return { error: "Sala llena", status: 409 };
     const token = newToken();
-    room.players.set(token, { token, name: name.trim(), hand: [], score: 0, connected: true });
+    room.players.set(token, { token, name: name.trim(), hand: [], newCardIds: [], score: 0, connected: true });
     return { token };
   }
 
@@ -130,11 +136,17 @@
     const player = room.players.get(token);
     if (!player) return { error: "Token inválido", status: 403 };
 
+    for (const c of player.hand) {
+      if (c !== null) room.whiteDiscard.push(c);
+    }
     room.players.delete(token);
     room.submissions.delete(token);
     room.labeled = room.labeled.filter((s) => s.token !== token);
 
-    if (room.players.size === 0) return { ok: true, empty: true };
+    if (room.players.size === 0) {
+      clearRoundTimer(room);
+      return { ok: true, empty: true };
+    }
 
     if (room.hostId === token) room.hostId = [...room.players.keys()][0];
     if (room.judgeId === token) room.judgeId = room.hostId;
@@ -166,15 +178,44 @@
     return room.whiteDeck.pop();
   }
 
-  function refillHand(room, player) {
+  function refillHand(room, player, markNew) {
+    const added = [];
+    for (let i = 0; i < player.hand.length; i++) {
+      if (player.hand[i] === null) {
+        const idx = drawWhite(room);
+        if (idx === null) continue;
+        player.hand[i] = idx;
+        added.push(idx);
+      }
+    }
     while (player.hand.length < HAND_SIZE) {
       const idx = drawWhite(room);
       if (idx === null) break;
       player.hand.push(idx);
+      added.push(idx);
     }
+    if (player.hand.includes(null)) {
+      player.hand = player.hand.filter((id) => id !== null);
+    }
+    player.newCardIds = markNew ? added : [];
+  }
+
+  function resolveNow(payload, fallback) {
+    if (payload && Number.isFinite(payload.now)) return payload.now;
+    return Number.isFinite(fallback) ? fallback : Date.now();
+  }
+
+  function startRoundTimer(room, now) {
+    room.timedOut = false;
+    room.roundEndsAt = room.roundSeconds > 0 ? now + room.roundSeconds * 1000 : null;
+  }
+
+  function clearRoundTimer(room) {
+    room.roundEndsAt = null;
   }
 
   function enterJudging(room) {
+    clearRoundTimer(room);
     room.phase = "judging";
     const tokens = shuffle([...room.submissions.keys()]);
     room.labeled = tokens.map((t, i) => ({
@@ -190,14 +231,23 @@
   /* Estado por jugador                                                  */
   /* ------------------------------------------------------------------ */
 
-  function snapshotFor(room, token) {
+  function snapshotFor(room, token, now) {
     const player = room.players.get(token);
     if (!player) return null;
+
+    const ts = Number.isFinite(now) ? now : Date.now();
+    const newSet = new Set(player.newCardIds || []);
 
     const snap = {
       code: room.code,
       phase: room.phase,
       targetScore: room.targetScore,
+      roundSeconds: room.roundSeconds,
+      roundRemainingMs:
+        room.phase === "playing" && room.roundEndsAt !== null
+          ? Math.max(0, room.roundEndsAt - ts)
+          : null,
+      timedOut: room.phase === "judging" ? Boolean(room.timedOut) : false,
       round: room.round,
       you: {
         name: player.name,
@@ -215,7 +265,9 @@
         self: p.token === token,
       })),
       blackCard: room.blackCard ? { text: room.blackCard.text, pick: room.blackCard.pick } : null,
-      hand: player.hand.map((idx) => ({ id: idx, text: WHITE[idx] })),
+      hand: player.hand
+        .filter((idx) => idx !== null)
+        .map((idx) => ({ id: idx, text: WHITE[idx], isNew: newSet.has(idx) })),
       judgeName: room.players.get(room.judgeId) ? room.players.get(room.judgeId).name : null,
     };
 
@@ -270,6 +322,7 @@
 
   function apply(room, token, action, payload) {
     const body = payload || {};
+    const now = resolveNow(body);
     const player = room.players.get(token);
     if (!player) return fail(403, "Token inválido");
 
@@ -291,10 +344,14 @@
         room.judgeId = room.hostId;
         room.round = 1;
 
-        for (const p of room.players.values()) p.hand = [];
-        for (const p of room.players.values()) refillHand(room, p);
+        for (const p of room.players.values()) {
+          p.hand = [];
+          p.newCardIds = [];
+        }
+        for (const p of room.players.values()) refillHand(room, p, false);
         drawBlack(room);
         room.phase = "playing";
+        startRoundTimer(room, now);
         return { ok: true };
       }
 
@@ -308,13 +365,14 @@
         if (!Array.isArray(cardIds) || cardIds.length !== pick) {
           return fail(400, "Tenés que jugar exactamente " + pick + " carta" + (pick === 1 ? "" : "s"));
         }
-        const hand = new Set(player.hand);
+        const hand = new Set(player.hand.filter((id) => id !== null));
         if (cardIds.some((id) => !Number.isInteger(id) || !hand.has(id))) {
           return fail(400, "Cartas inválidas");
         }
         if (new Set(cardIds).size !== cardIds.length) return fail(400, "No podés repetir cartas");
 
-        player.hand = player.hand.filter((id) => !cardIds.includes(id));
+        const playedSet = new Set(cardIds);
+        player.hand = player.hand.map((id) => (playedSet.has(id) ? null : id));
         room.submissions.set(token, cardIds);
 
         if (room.submissions.size >= room.players.size - 1) enterJudging(room);
@@ -329,6 +387,36 @@
         } else if (room.phase !== "judging") {
           return fail(409, "No es momento de revelar");
         }
+        return { ok: true };
+      }
+
+      case "timeout": {
+        if (room.hostId !== token) return fail(403, "Solo el host puede hacer eso");
+        if (room.phase !== "playing") return fail(409, "No hay ronda en curso");
+        if (room.roundEndsAt === null) return fail(409, "La ronda no tiene timer");
+        if (now < room.roundEndsAt) return fail(409, "Todavía queda tiempo");
+
+        if (room.submissions.size === 0) {
+          const pick = room.blackCard.pick;
+          for (const [t, p] of room.players.entries()) {
+            if (t === room.judgeId) continue;
+            const available = p.hand.filter((id) => id !== null);
+            if (available.length < pick) continue;
+            const chosen = shuffle(available.slice()).slice(0, pick);
+            const chosenSet = new Set(chosen);
+            p.hand = p.hand.map((id) => (chosenSet.has(id) ? null : id));
+            room.submissions.set(t, chosen);
+          }
+        }
+
+        if (room.submissions.size > 0) {
+          room.timedOut = true;
+          enterJudging(room);
+          return { ok: true };
+        }
+
+        drawBlack(room);
+        startRoundTimer(room, now);
         return { ok: true };
       }
 
@@ -358,6 +446,8 @@
 
         const winner = room.players.get(room.winnerToken);
         if (winner && winner.score >= room.targetScore) {
+          clearRoundTimer(room);
+          room.timedOut = false;
           room.phase = "ended";
           return { ok: true };
         }
@@ -369,7 +459,7 @@
         for (const s of room.labeled) {
           for (const c of s.cards) room.whiteDiscard.push(c);
         }
-        for (const p of room.players.values()) refillHand(room, p);
+        for (const p of room.players.values()) refillHand(room, p, true);
 
         room.submissions.clear();
         room.labeled = [];
@@ -379,6 +469,7 @@
         drawBlack(room);
         room.round += 1;
         room.phase = "playing";
+        startRoundTimer(room, now);
         return { ok: true };
       }
 
@@ -389,6 +480,7 @@
         for (const p of room.players.values()) {
           p.score = 0;
           p.hand = [];
+          p.newCardIds = [];
         }
         room.submissions.clear();
         room.labeled = [];
@@ -397,17 +489,43 @@
         room.winnerToken = null;
         room.blackCard = null;
         room.round = 0;
+        clearRoundTimer(room);
+        room.timedOut = false;
         room.phase = "lobby";
         return { ok: true };
       }
 
       case "settings": {
         if (room.hostId !== token) return fail(403, "Solo el host puede hacer eso");
-        const target = body.targetScore;
-        if (!Number.isInteger(target) || target < MIN_TARGET || target > MAX_TARGET) {
-          return fail(400, "El puntaje objetivo va de " + MIN_TARGET + " a " + MAX_TARGET);
+        const hasTarget = body.targetScore !== undefined;
+        const hasTimer = body.roundSeconds !== undefined;
+        if (!hasTarget && !hasTimer) return fail(400, "No hay cambios para aplicar");
+
+        if (hasTarget) {
+          const target = body.targetScore;
+          if (!Number.isInteger(target) || target < MIN_TARGET || target > MAX_TARGET) {
+            return fail(400, "El puntaje objetivo va de " + MIN_TARGET + " a " + MAX_TARGET);
+          }
         }
-        room.targetScore = target;
+        if (hasTimer) {
+          const secs = body.roundSeconds;
+          const validSecs =
+            secs === 0 ||
+            (Number.isInteger(secs) && secs >= MIN_ROUND_SECONDS && secs <= MAX_ROUND_SECONDS);
+          if (!validSecs) {
+            return fail(
+              400,
+              "El tiempo por ronda va de " +
+                MIN_ROUND_SECONDS +
+                " a " +
+                MAX_ROUND_SECONDS +
+                " segundos (o sin límite)"
+            );
+          }
+        }
+
+        if (hasTarget) room.targetScore = body.targetScore;
+        if (hasTimer) room.roundSeconds = body.roundSeconds;
         return { ok: true };
       }
 
@@ -425,6 +543,9 @@
     DEFAULT_TARGET,
     MIN_TARGET,
     MAX_TARGET,
+    DEFAULT_ROUND_SECONDS,
+    MIN_ROUND_SECONDS,
+    MAX_ROUND_SECONDS,
     BLACK_COUNT: BLACK.length,
     WHITE_COUNT: WHITE.length,
   };

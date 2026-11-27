@@ -2,6 +2,7 @@
 
 (function () {
   var SESSION_KEY = "hdp-session";
+  var NAME_KEY = "hdp-name";
 
   /* ---------- DOM ---------- */
   var views = {
@@ -21,11 +22,18 @@
     judgeFlag: document.getElementById("judgeFlag"),
     toast: document.getElementById("toast"),
 
-    nameInput: document.getElementById("nameInput"),
-    createForm: document.getElementById("createForm"),
-    joinForm: document.getElementById("joinForm"),
+    homeLead: document.getElementById("homeLead"),
+    homeModeSwitch: document.getElementById("homeModeSwitch"),
+    modeCreateBtn: document.getElementById("modeCreateBtn"),
+    modeJoinBtn: document.getElementById("modeJoinBtn"),
+    inviteBanner: document.getElementById("inviteBanner"),
+    inviteCodeValue: document.getElementById("inviteCodeValue"),
+    homeForm: document.getElementById("homeForm"),
+    codeField: document.getElementById("codeField"),
     codeInput: document.getElementById("codeInput"),
-    joinBtn: document.getElementById("joinBtn"),
+    nameInput: document.getElementById("nameInput"),
+    homeSubmitBtn: document.getElementById("homeSubmitBtn"),
+    exitInviteBtn: document.getElementById("exitInviteBtn"),
     howBtn: document.getElementById("howBtn"),
     howDialog: document.getElementById("howDialog"),
     closeHowBtn: document.getElementById("closeHowBtn"),
@@ -35,18 +43,29 @@
     copyLinkBtn: document.getElementById("copyLinkBtn"),
     playerCount: document.getElementById("playerCount"),
     playersList: document.getElementById("playersList"),
+    lobbyRules: document.getElementById("lobbyRules"),
     lobbyHost: document.getElementById("lobbyHost"),
     targetInput: document.getElementById("targetInput"),
+    roundTimerGroup: document.getElementById("roundTimerGroup"),
     startBtn: document.getElementById("startBtn"),
     startHint: document.getElementById("startHint"),
     leaveBtn: document.getElementById("leaveBtn"),
 
     roundNum: document.getElementById("roundNum"),
+    roundTimer: document.getElementById("roundTimer"),
+    roundTimerText: document.getElementById("roundTimerText"),
+    roundTimerBar: document.getElementById("roundTimerBar"),
+    roundTimerFill: document.getElementById("roundTimerFill"),
     blackCard: document.getElementById("blackCard"),
     roundInstruction: document.getElementById("roundInstruction"),
     hand: document.getElementById("hand"),
     playBtn: document.getElementById("playBtn"),
 
+    judgeRoundNum: document.getElementById("judgeRoundNum"),
+    judgeTimer: document.getElementById("judgeTimer"),
+    judgeTimerText: document.getElementById("judgeTimerText"),
+    judgeTimerBar: document.getElementById("judgeTimerBar"),
+    judgeTimerFill: document.getElementById("judgeTimerFill"),
     judgeBlackCard: document.getElementById("judgeBlackCard"),
     submittedCount: document.getElementById("submittedCount"),
     expectedCount: document.getElementById("expectedCount"),
@@ -76,9 +95,32 @@
   var snapshot = null;
   var selected = []; // ids de cartas blancas elegidas
   var roundKey = null; // para resetear la selección en cada ronda
+  var renderedHandKey = null;
+  var currentView = null;
+  var homeMode = "create"; // "create" | "join" | "invite"
+  var inviteCode = null;
+  var joining = false;
+  var localRoundEndsAt = null;
+  var localRoundTotalMs = 0;
+  var timerInterval = null;
+  var lastTimeoutToastRound = null;
   var toastTimer = null;
 
   /* ---------- Sesión (localStorage) ---------- */
+  function loadSavedName() {
+    try {
+      return localStorage.getItem(NAME_KEY) || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function saveName(name) {
+    try {
+      if (name) localStorage.setItem(NAME_KEY, name);
+    } catch (e) {}
+  }
+
   function loadSession() {
     try {
       var raw = localStorage.getItem(SESSION_KEY);
@@ -139,28 +181,91 @@
 
   /* ---------- Render ---------- */
   function show(name) {
+    var changed = name !== currentView;
+    currentView = name;
     Object.keys(views).forEach(function (k) { views[k].hidden = k !== name; });
     el.topbar.hidden = name === "home";
-    window.scrollTo(0, 0);
+    if (changed) window.scrollTo(0, 0);
+  }
+
+  function stopCountdownUI() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    localRoundEndsAt = null;
+    localRoundTotalMs = 0;
+    [el.roundTimer, el.roundTimerBar, el.judgeTimer, el.judgeTimerBar].forEach(function (node) {
+      if (node) node.hidden = true;
+    });
+  }
+
+  function updateCountdownUI() {
+    if (localRoundEndsAt === null) return;
+    var remaining = Math.max(0, localRoundEndsAt - Date.now());
+    var secs = Math.ceil(remaining / 1000);
+    var ratio = localRoundTotalMs > 0 ? Math.max(0, Math.min(1, remaining / localRoundTotalMs)) : 0;
+    var urgent = secs <= 5 ? "true" : "false";
+
+    if (el.roundTimerText) el.roundTimerText.textContent = secs + "s";
+    if (el.judgeTimerText) el.judgeTimerText.textContent = secs + "s";
+    if (el.roundTimer) el.roundTimer.setAttribute("data-urgent", urgent);
+    if (el.judgeTimer) el.judgeTimer.setAttribute("data-urgent", urgent);
+    if (el.roundTimerFill) {
+      el.roundTimerFill.setAttribute("data-urgent", urgent);
+      el.roundTimerFill.style.transform = "scaleX(" + ratio.toFixed(4) + ")";
+    }
+    if (el.judgeTimerFill) {
+      el.judgeTimerFill.setAttribute("data-urgent", urgent);
+      el.judgeTimerFill.style.transform = "scaleX(" + ratio.toFixed(4) + ")";
+    }
+  }
+
+  function startCountdownUI(remainingMs, totalSeconds) {
+    localRoundEndsAt = Date.now() + Math.max(0, remainingMs);
+    localRoundTotalMs = (totalSeconds || 30) * 1000;
+    [el.roundTimer, el.roundTimerBar, el.judgeTimer, el.judgeTimerBar].forEach(function (node) {
+      if (node) node.hidden = false;
+    });
+    updateCountdownUI();
+    if (!timerInterval) {
+      timerInterval = setInterval(updateCountdownUI, 200);
+    }
   }
 
   function applySnapshot(snap) {
     snapshot = snap;
     var key = snap.round + "|" + (snap.blackCard ? snap.blackCard.text : "");
-    if (key !== roundKey) {
+    var isNewRound = key !== roundKey;
+    if (isNewRound) {
       selected = [];
       roundKey = key;
     }
+    if (snap.phase !== "playing") {
+      renderedHandKey = null;
+      stopCountdownUI();
+    } else if (typeof snap.roundRemainingMs === "number") {
+      startCountdownUI(snap.roundRemainingMs, snap.roundSeconds);
+    } else {
+      stopCountdownUI();
+    }
+    if (snap.phase === "judging" && snap.timedOut && lastTimeoutToastRound !== snap.round) {
+      lastTimeoutToastRound = snap.round;
+      toast("Se acabó el tiempo de la ronda", "info");
+    }
     el.judgeFlag.hidden = !(snap.you && snap.you.isJudge &&
       (snap.phase === "playing" || snap.phase === "judging" || snap.phase === "reveal"));
-    render();
+    render(isNewRound);
   }
 
-  function render() {
+  function render(isNewRound) {
     if (!snapshot) { show("home"); return; }
     switch (snapshot.phase) {
       case "lobby": show("lobby"); renderLobby(); break;
-      case "playing": if (snapshot.you.isJudge) { show("judge"); renderJudge(); } else { show("round"); renderRound(); } break;
+      case "playing":
+        if (snapshot.you.isJudge) { show("judge"); renderJudge(); }
+        else { show("round"); renderRound(isNewRound); }
+        break;
       case "judging": show("judging"); renderJudging(); break;
       case "reveal": show("reveal"); renderReveal(); break;
       case "ended": show("final"); renderFinal(); break;
@@ -204,10 +309,23 @@
       el.playersList.appendChild(li);
     });
 
+    var secs = typeof snapshot.roundSeconds === "number" ? snapshot.roundSeconds : 30;
+    if (el.lobbyRules) {
+      var timeText = secs > 0 ? secs + "s por ronda" : "sin límite de tiempo";
+      el.lobbyRules.textContent = "A " + snapshot.targetScore + " puntos · " + timeText;
+    }
+
     el.lobbyHost.hidden = !snapshot.you.isHost;
     if (snapshot.you.isHost) {
       if (document.activeElement !== el.targetInput) {
         el.targetInput.value = String(snapshot.targetScore);
+      }
+      if (el.roundTimerGroup) {
+        var timerBtns = el.roundTimerGroup.querySelectorAll(".seg-btn");
+        for (var i = 0; i < timerBtns.length; i++) {
+          var b = timerBtns[i];
+          b.setAttribute("aria-checked", Number(b.dataset.seconds) === secs ? "true" : "false");
+        }
       }
       var canStart = players.length >= 3;
       el.startBtn.disabled = !canStart;
@@ -217,7 +335,7 @@
     }
   }
 
-  function renderRound() {
+  function renderRound(isNewRound) {
     el.roundNum.textContent = String(snapshot.round);
     el.blackCard.innerHTML = blackHTML(snapshot.blackCard.text);
 
@@ -234,16 +352,34 @@
       updatePlayButton(pick);
     }
 
-    renderHand(pick);
+    renderHand(pick, isNewRound);
   }
 
-  function renderHand(pick) {
+  function renderHand(pick, isNewRound) {
+    var handKey = snapshot.round + "|" + pick + "|" + (snapshot.you.submitted ? "1" : "0") + "|" +
+      snapshot.hand.map(function (c) { return c.id + (c.isNew ? "n" : ""); }).join(",");
+
+    if (handKey === renderedHandKey) {
+      var btns = el.hand.querySelectorAll(".white-card");
+      for (var i = 0; i < btns.length; i++) {
+        var b = btns[i];
+        var cid = Number(b.dataset.id);
+        var on = selected.indexOf(cid) !== -1;
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+        b.setAttribute("aria-selected", on ? "true" : "false");
+        b.disabled = Boolean(snapshot.you.submitted);
+      }
+      return;
+    }
+
+    renderedHandKey = handKey;
     el.hand.innerHTML = "";
     snapshot.hand.forEach(function (card) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "white-card";
       btn.dataset.id = String(card.id);
+      btn.dataset.new = card.isNew ? "true" : "false";
       btn.setAttribute("role", "option");
       btn.setAttribute("aria-label", card.text);
       var pressed = selected.indexOf(card.id) !== -1;
@@ -251,17 +387,32 @@
       btn.setAttribute("aria-selected", pressed ? "true" : "false");
       if (snapshot.you.submitted) btn.disabled = true;
 
+      var head = document.createElement("span");
+      head.className = "card-head";
       var logo = document.createElement("span");
       logo.className = "card-logo";
       logo.textContent = "HDP";
+      head.appendChild(logo);
+      if (card.isNew) {
+        var badge = document.createElement("span");
+        badge.className = "card-new";
+        badge.textContent = "Nueva";
+        head.appendChild(badge);
+      }
+
       var text = document.createElement("span");
+      text.className = "card-body";
       text.textContent = card.text;
-      btn.appendChild(logo);
+      btn.appendChild(head);
       btn.appendChild(text);
 
       btn.addEventListener("click", function () { toggleSelect(card.id, pick); });
       el.hand.appendChild(btn);
     });
+
+    if (isNewRound) {
+      el.hand.scrollLeft = 0;
+    }
   }
 
   function toggleSelect(id, pick) {
@@ -293,6 +444,7 @@
   }
 
   function renderJudge() {
+    if (el.judgeRoundNum) el.judgeRoundNum.textContent = String(snapshot.round);
     el.judgeBlackCard.innerHTML = blackHTML(snapshot.blackCard.text);
     el.submittedCount.textContent = String(snapshot.submittedCount);
     el.expectedCount.textContent = String(snapshot.expectedCount);
@@ -414,10 +566,61 @@
   }
 
   /* ---------- Sala P2P ---------- */
+  function clearRoomParamFromUrl() {
+    try {
+      var url = new URL(window.location.href);
+      if (!url.searchParams.has("sala")) return;
+      url.searchParams.delete("sala");
+      window.history.replaceState(null, "", url.toString());
+    } catch (e) {}
+  }
+
+  function setHomeMode(mode, code) {
+    homeMode = mode;
+    if (mode === "invite" && code) {
+      inviteCode = code;
+      if (el.inviteCodeValue) el.inviteCodeValue.textContent = code;
+      if (el.codeInput) el.codeInput.value = code;
+      if (el.homeModeSwitch) el.homeModeSwitch.hidden = true;
+      if (el.homeLead) el.homeLead.hidden = true;
+      if (el.codeField) el.codeField.hidden = true;
+      if (el.inviteBanner) el.inviteBanner.hidden = false;
+      if (el.exitInviteBtn) el.exitInviteBtn.hidden = false;
+      if (el.homeSubmitBtn) el.homeSubmitBtn.textContent = joining ? "Conectando…" : "Unirme a la sala";
+      return;
+    }
+
+    inviteCode = null;
+    if (el.homeModeSwitch) el.homeModeSwitch.hidden = false;
+    if (el.homeLead) el.homeLead.hidden = false;
+    if (el.inviteBanner) el.inviteBanner.hidden = true;
+    if (el.exitInviteBtn) el.exitInviteBtn.hidden = true;
+
+    if (mode === "join") {
+      if (el.codeField) el.codeField.hidden = false;
+      if (el.modeCreateBtn) el.modeCreateBtn.setAttribute("aria-checked", "false");
+      if (el.modeJoinBtn) el.modeJoinBtn.setAttribute("aria-checked", "true");
+      if (el.homeSubmitBtn) el.homeSubmitBtn.textContent = joining ? "Conectando…" : "Unirme a la sala";
+    } else {
+      homeMode = "create";
+      if (el.codeField) el.codeField.hidden = true;
+      if (el.modeCreateBtn) el.modeCreateBtn.setAttribute("aria-checked", "true");
+      if (el.modeJoinBtn) el.modeJoinBtn.setAttribute("aria-checked", "false");
+      if (el.homeSubmitBtn) el.homeSubmitBtn.textContent = joining ? "Conectando…" : "Crear sala";
+    }
+  }
+
   function setJoining(busy) {
-    if (!el.joinBtn) return;
-    el.joinBtn.disabled = busy;
-    el.joinBtn.textContent = busy ? "Conectando…" : "Unirme";
+    joining = Boolean(busy);
+    if (el.homeSubmitBtn) {
+      el.homeSubmitBtn.disabled = joining;
+      el.homeSubmitBtn.textContent = joining
+        ? "Conectando…"
+        : (homeMode === "create" ? "Crear sala" : "Unirme a la sala");
+    }
+    if (el.modeCreateBtn) el.modeCreateBtn.disabled = joining;
+    if (el.modeJoinBtn) el.modeJoinBtn.disabled = joining;
+    if (el.exitInviteBtn) el.exitInviteBtn.disabled = joining;
   }
 
   function startHost(name) {
@@ -426,7 +629,6 @@
       .then(function (data) {
         session = { code: data.code, token: data.token };
         saveSession();
-        el.nameInput.value = "";
         connect();
       })
       .catch(function (e) { toast(e.message, "error"); });
@@ -454,8 +656,7 @@
         saveSession();
       }
       setJoining(false);
-      el.nameInput.value = "";
-      el.codeInput.value = "";
+      if (el.codeInput) el.codeInput.value = "";
       applySnapshot(snap);
       setConn("online");
     });
@@ -475,11 +676,19 @@
   }
 
   function goHome() {
+    stopCountdownUI();
     setJoining(false);
+    clearRoomParamFromUrl();
     if (window.HDP_BACKEND) HDP_BACKEND.reset();
     clearSession();
     snapshot = null;
     selected = [];
+    roundKey = null;
+    renderedHandKey = null;
+    lastTimeoutToastRound = null;
+    if (el.codeInput) el.codeInput.value = "";
+    if (el.nameInput) el.nameInput.value = loadSavedName();
+    setHomeMode("create");
     show("home");
   }
 
@@ -502,11 +711,40 @@
   }
 
   /* ---------- Eventos ---------- */
-  el.createForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    var name = el.nameInput.value.trim();
-    if (!name) { toast("Poné tu nombre", "error"); return; }
-    startHost(name);
+  if (el.modeCreateBtn) {
+    el.modeCreateBtn.addEventListener("click", function () {
+      if (joining) return;
+      setHomeMode("create");
+      if (el.nameInput) el.nameInput.focus();
+    });
+  }
+
+  if (el.modeJoinBtn) {
+    el.modeJoinBtn.addEventListener("click", function () {
+      if (joining) return;
+      setHomeMode("join");
+      if (el.codeInput && !el.codeInput.value) el.codeInput.focus();
+      else if (el.nameInput) el.nameInput.focus();
+    });
+  }
+
+  if (el.exitInviteBtn) {
+    el.exitInviteBtn.addEventListener("click", function () {
+      if (joining) return;
+      clearRoomParamFromUrl();
+      if (el.codeInput) el.codeInput.value = "";
+      setHomeMode("create");
+      if (el.nameInput) el.nameInput.focus();
+    });
+  }
+
+  el.codeInput.addEventListener("paste", function (e) {
+    var text = e.clipboardData && e.clipboardData.getData ? e.clipboardData.getData("text") : "";
+    var match = text && text.match(/[?&]sala=([A-Za-z0-9]+)/i);
+    if (match && window.HDP_NET) {
+      e.preventDefault();
+      el.codeInput.value = HDP_NET.normalizeRoomCode(match[1]);
+    }
   });
 
   el.codeInput.addEventListener("input", function () {
@@ -516,13 +754,40 @@
     }
   });
 
-  el.joinForm.addEventListener("submit", function (e) {
+  el.homeForm.addEventListener("submit", function (e) {
     e.preventDefault();
+    if (joining) return;
     var name = el.nameInput.value.trim();
-    var code = el.codeInput.value.trim();
-    if (!name) { toast("Poné tu nombre", "error"); return; }
-    if (!code) { toast("Escribí el código de 6 caracteres", "error"); return; }
-    startGuest(code, name);
+
+    if (homeMode === "join") {
+      var code = el.codeInput.value.trim();
+      if (!code) {
+        toast("Escribí el código de 6 caracteres", "error");
+        el.codeInput.focus();
+        return;
+      }
+      if (!name) {
+        toast("Poné tu nombre", "error");
+        el.nameInput.focus();
+        return;
+      }
+      saveName(name);
+      startGuest(code, name);
+      return;
+    }
+
+    if (!name) {
+      toast("Poné tu nombre", "error");
+      el.nameInput.focus();
+      return;
+    }
+    saveName(name);
+
+    if (homeMode === "invite") {
+      startGuest(inviteCode, name);
+    } else {
+      startHost(name);
+    }
   });
 
   function copyText(text, okMsg) {
@@ -556,6 +821,16 @@
     var v = Number(el.targetInput.value);
     authed("/api/settings", { targetScore: v }).catch(function (e) { toast(e.message, "error"); });
   });
+
+  if (el.roundTimerGroup) {
+    var timerSegBtns = el.roundTimerGroup.querySelectorAll(".seg-btn");
+    for (var ti = 0; ti < timerSegBtns.length; ti++) {
+      timerSegBtns[ti].addEventListener("click", function () {
+        var secs = Number(this.dataset.seconds);
+        authed("/api/settings", { roundSeconds: secs }).catch(function (e) { toast(e.message, "error"); });
+      });
+    }
+  }
 
   el.leaveBtn.addEventListener("click", leaveGame);
   el.exitBtn.addEventListener("click", leaveGame);
@@ -597,13 +872,31 @@
   });
 
   /* ---------- Arranque ---------- */
+  var savedName = loadSavedName();
+  if (savedName && el.nameInput) el.nameInput.value = savedName;
+
+  setHomeMode("create");
   try {
     var params = new URLSearchParams(window.location.search);
     var salaParam = params.get("sala");
-    if (salaParam && el.codeInput && window.HDP_NET) {
-      el.codeInput.value = HDP_NET.normalizeRoomCode(salaParam);
+    if (salaParam && window.HDP_NET) {
+      var cleanSala = HDP_NET.normalizeRoomCode(salaParam);
+      if (HDP_NET.isValidRoomCode(cleanSala)) {
+        setHomeMode("invite", cleanSala);
+      } else if (cleanSala) {
+        if (el.codeInput) el.codeInput.value = cleanSala;
+        setHomeMode("join");
+        toast("El código del link no es válido", "error");
+      }
     }
   } catch (e) {}
+
+  function showInitialHome() {
+    show("home");
+    if (homeMode === "invite" && el.nameInput && !el.nameInput.value) {
+      el.nameInput.focus();
+    }
+  }
 
   loadSession();
   if (session) {
@@ -614,9 +907,9 @@
       })
       .catch(function () {
         clearSession();
-        show("home");
+        showInitialHome();
       });
   } else {
-    show("home");
+    showInitialHome();
   }
 })();

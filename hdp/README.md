@@ -20,7 +20,7 @@ No hay servidor propio ni cuentas: el que crea la sala es el host y su navegador
 
 1. El host toca **Crear sala** y ve el código de 6 caracteres.
 2. Les pasa ese código (o toca **Copiar link**) al resto.
-3. Cada jugador pone su nombre, escribe el código de 6 caracteres en **¿Tenés un código?** y toca **Unirme**.
+3. Quien abre el link entra directo a la pantalla de invitación, pone su nombre y toca **Unirme a la sala** (sin escribir código ni ver la opción de crear otra). Si entra sin link, elige **Tengo un código**, escribe los 6 caracteres y pone su nombre.
 
 Una vez que se conectan, toda la partida corre directo entre los navegadores por WebRTC.
 
@@ -38,8 +38,9 @@ Los data channels no piden contexto seguro, así que funciona igual sobre `http:
 ## Decisiones del juego
 
 - **El juez nunca ve los autores hasta el final.** Las respuestas se mezclan y se etiquetan A, B, C… Recién en el resultado se muestra quién jugó cada una.
+- **Tiempo por ronda configurable.** Por defecto son 30 segundos (configurable en la sala entre 15s, 20s, 30s o libre). Si se acaba el tiempo con respuestas enviadas, pasa directo al juez; si nadie mandó nada, elige cartas al azar de cada mano para que la mesa no se trabe.
 - **El juez puede apurar.** Si alguien se colgó y no juega, el juez tiene "Ver respuestas" para seguir igual.
-- **Cartas que faltan, se reciclan.** Cuando se agota un mazo, se rebaraja el descarte solo.
+- **Solo se renuevan las cartas jugadas.** Cada jugador arranca con 10 cartas y conserva las que no jugó en su mismo lugar; al pasar de ronda solo se reponen los espacios usados (marcados como *Nueva*). Cuando se agota un mazo, se rebaraja el descarte solo.
 - **El host es la mesa.** Si cierra la pestaña, se corta la partida: es el que tiene el estado y los canales.
 - **Sin cuentas ni métricas.** Nada sale de los navegadores: ni salas, ni puntajes, ni historial.
 - **74 cartas negras y 244 blancas**, escritas en rioplatense. Los textos de la interfaz también, cálidos y breves.
